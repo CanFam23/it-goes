@@ -26,7 +26,8 @@
 - Build full-stack web development skills  
 - Gain experience with backend API creation and integration  
 - Learn hosting and deployment of a web app  
-- Work with external APIs for maps, graphs, and other data  
+- Work with external APIs for maps, graphs, and other data
+- Test-driven development
 
 ---
 
