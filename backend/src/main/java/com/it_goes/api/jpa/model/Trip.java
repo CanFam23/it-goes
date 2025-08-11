@@ -106,7 +106,7 @@ public class Trip {
     )
     private final Set<User> users = new HashSet<>();
 
-    public final Set<Image> getImages(){
+    public Set<Image> getImages(){
         return Collections.unmodifiableSet(images);
     }
 
