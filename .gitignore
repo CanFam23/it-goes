@@ -1,4 +1,4 @@
-HELP.md
+backend/HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -19,7 +19,7 @@ bin/
 
 ### IntelliJ IDEA ###
 .idea
-.idea/*
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -37,4 +37,4 @@ out/
 ### VS Code ###
 .vscode/
 
-backend/src/main/resources/application.properties
+application.properties
