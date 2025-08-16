@@ -23,6 +23,13 @@ import lombok.*;
 @Entity
 @Table(name = "location")
 public class Location {
+
+    public Location(String name, State state, Country country) {
+        this.name = name;
+        this.state = state;
+        this.country = country;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

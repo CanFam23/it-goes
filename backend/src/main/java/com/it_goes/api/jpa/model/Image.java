@@ -14,6 +14,13 @@ import lombok.*;
 @Entity
 @Table(name = "image")
 public class Image {
+
+    public Image(String s3Key, String imageUrl, String imageName){
+        this.s3Key = s3Key;
+        this.imageUrl = imageUrl;
+        this.imageName = imageName;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -1,5 +1,6 @@
 package com.it_goes.api.jpa.model;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import jakarta.persistence.CascadeType;
@@ -18,17 +19,23 @@ import lombok.*;
 @Entity
 @Table(name = "season")
 public class Season {
+
+    public Season(LocalDate start, LocalDate end) {
+        this.startDate = start;
+        this.endDate = end;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Setter
     @Column(nullable = false)
-    private Date startDate;
+    private LocalDate startDate;
 
     @Setter
     @Column(nullable = false)
-    private Date endDate;
+    private LocalDate endDate;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

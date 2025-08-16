@@ -64,7 +64,10 @@ public class User {
     // Unidirectional
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany
+    @OneToMany(
+            cascade = { CascadeType.PERSIST, CascadeType.MERGE },
+            orphanRemoval = true
+    )
     @JoinColumn(name = "it_goes_user_id")
     private final Set<SocialLink> socialLinks = new HashSet<>();
 

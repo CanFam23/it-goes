@@ -1,5 +1,6 @@
 package com.it_goes.api.jpa.model;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -17,12 +18,13 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @EqualsAndHashCode
@@ -31,7 +33,7 @@ import lombok.ToString;
 @Table(name = "trip")
 public class Trip {
 
-    public Trip(String title, User author, Location location, Date dateOfTrip) {
+    public Trip(String title, User author, Location location, LocalDate dateOfTrip) {
         this.title = title;
         this.author = author;
         this.location = location;
@@ -53,15 +55,17 @@ public class Trip {
 
     @Setter
     @Column(nullable = false)
-    private Date dateOfTrip;
+    private LocalDate dateOfTrip;
 
     @Setter
     @Column(nullable = false)
-    private Date datePosted;
+    @CreationTimestamp
+    private LocalDate datePosted;
 
     @Setter
     @Column(nullable = false)
-    private Date dateUpdated;
+    @UpdateTimestamp
+    private LocalDate dateUpdated;
 
     @Setter
     @Lob  // Store as binary large object (BLOB)
