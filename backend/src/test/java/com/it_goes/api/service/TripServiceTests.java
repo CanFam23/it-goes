@@ -31,7 +31,7 @@ public class TripServiceTests {
     TripRepository tripRepo;
 
     @InjectMocks
-    private TripService tripService;
+    private TripServiceImpl tripService;
 
     private static User user;
     private static Location location;
@@ -61,7 +61,7 @@ public class TripServiceTests {
 
         // Verify exception thrown when trip with given id isn't found
         assertThatThrownBy(() -> tripService.getTrip(2L)).isInstanceOf(NotFoundException.class);
-        verify(tripRepo, times(1)).findById(1L); // ensure repo was called
+        verify(tripRepo, times(1)).findById(2L); // ensure repo was called
     }
 
     @Test
@@ -88,50 +88,37 @@ public class TripServiceTests {
 
         // Verify trip is found
         assertThat(dto.title()).isEqualTo("title");
-        verify(tripRepo, times(1)).findById(1L); // ensure repo was called
+        verify(tripRepo, times(1)).findById(9223372036854775807L); // ensure repo was called
     }
 
     @Test
     void getRecentTripSummaries_returnsPageDto(){
-        final Pageable pageable = PageRequest.of(1, 5, Sort.by("createdAt").descending());
+        final Pageable pageable = PageRequest.of(0,2, Sort.by("dateOfTrip").descending());
         final List<Trip> trips = List.of(
                 new Trip("Bridger Bowl", user, location, LocalDate.of(2025,1,1)),
                 new Trip("Big Sky", user, location, LocalDate.of(2025,2,1))
         );
-        final Page<Trip> page = new PageImpl<>(trips, pageable,23);
+        final Page<Trip> page = new PageImpl<>(trips, pageable,2);
 
-        when(tripRepo.findAll(pageable)).thenReturn(page);
+        when(tripRepo.findAllByOrderByDateOfTripDesc(any(Pageable.class))).thenReturn(page);
 
         final Page<TripSummaryDto> tripsFound = tripService.getRecentTripSummaries(2);
 
         assertThat(tripsFound.getTotalElements()).isEqualTo(trips.size());
 
-        assertThat(tripsFound.getContent().get(0).title()).isEqualTo("Keystone");
+        assertThat(tripsFound.getContent().get(0).title()).isEqualTo("Bridger Bowl");
 
-        assertThat(tripsFound.getNumber()).isEqualTo(1);
-        assertThat(tripsFound.getSize()).isEqualTo(5);
-        assertThat(tripsFound.getTotalElements()).isEqualTo(23);
-        assertThat(tripsFound.getTotalPages()).isEqualTo((int) Math.ceil(23 / 5.0));
-        assertThat(tripsFound.hasNext()).isTrue();
+        assertThat(tripsFound.getContent().get(1).title()).isEqualTo("Big Sky");
 
-        verify(tripRepo).findAll(pageable);
+        assertThat(tripsFound.getNumber()).isEqualTo(0);
+
+        verify(tripRepo).findAllByOrderByDateOfTripDesc(any(Pageable.class));
     }
 
     @Test
-    void getRecentTripSummaries_noneFound(){
-        final Pageable pageable = PageRequest.of(1, 5, Sort.by("createdAt").descending());
-
-        when(tripRepo.findAll(pageable)).thenReturn(Page.empty(pageable));
-
-        final Page<TripSummaryDto> tripsFound = tripService.getRecentTripSummaries(2);
-
-        assertThat(tripsFound).isNotNull();
-        assertThat(tripsFound.hasContent()).isFalse();
-        assertThat(tripsFound.getContent()).isEmpty();
-        assertThat(tripsFound.getTotalElements()).isZero();
-        assertThat(tripsFound.getTotalPages()).isZero();
-        assertThat(tripsFound.getNumber()).isEqualTo(0);
-        assertThat(tripsFound.getSize()).isEqualTo(10);
+    void getRecentTripSummaries_noneFound_throwsException(){
+        assertThatThrownBy(() -> tripService.getRecentTripSummaries(2)).isInstanceOf(NotFoundException.class);
+        verify(tripRepo, times(1)).findAllByOrderByDateOfTripDesc(any(Pageable.class));
     }
 
     @Test
@@ -140,10 +127,10 @@ public class TripServiceTests {
         assertThatThrownBy(() -> tripService.getRecentTripSummaries(-1)).isInstanceOf(IllegalArgumentException.class);
         verify(tripRepo, never()).findAllByOrderByDateOfTripDesc(any(Pageable.class));
 
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(TripService.MIN_NUM_TRIPS+1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> tripService.getRecentTripSummaries(TripService.MIN_NUM_TRIPS-1)).isInstanceOf(IllegalArgumentException.class);
         verify(tripRepo, never()).findAllByOrderByDateOfTripDesc(any(Pageable.class));
 
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(TripService.MIN_NUM_TRIPS-1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> tripService.getRecentTripSummaries(TripService.MAX_NUM_TRIPS+1)).isInstanceOf(IllegalArgumentException.class);
         verify(tripRepo, never()).findAllByOrderByDateOfTripDesc(any(Pageable.class));
     }
 }
