@@ -8,9 +8,9 @@ import com.it_goes.api.util.exception.NotFoundException;
 import org.springframework.data.domain.Page;
 
 public interface TripService {
-    final int MIN_NUM_TRIPS = 1;
+    int MIN_NUM_TRIPS = 1;
 
-    final int MAX_NUM_TRIPS = 5;
+    int MAX_NUM_TRIPS = 5;
 
     /**
      * Given a {@link Trip} object, converts it to a {@link TripSummaryDto}.

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.logging.Logger;
 
@@ -47,8 +48,14 @@ public class TripServiceImpl implements TripService{
         return TripService.toTripDto(tripFound);
     }
 
-    /**{@inheritDoc}*/
+    /**
+     * {@inheritDoc}
+     * This method needs a `transactional` annotation because the {@link TripSummaryDto} object loads a LOB
+     * object (The trips description). Reading a large object in Postgres needs a transactional action, they are not allowed
+     * to be used in auto-commit mode.
+     * */
     @Override
+    @Transactional
     public Page<TripSummaryDto> getRecentTripSummaries(int numTrips) {
         if (numTrips < TripService.MIN_NUM_TRIPS || numTrips > TripService.MAX_NUM_TRIPS) {
             throw new IllegalArgumentException("Number of trips (" + numTrips + ") is out of range");
