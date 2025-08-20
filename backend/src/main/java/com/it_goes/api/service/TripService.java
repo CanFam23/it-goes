@@ -48,8 +48,9 @@ public interface TripService {
 
     /**
      * Gets summaries of recent trips, should be able to query between {@link #MIN_NUM_TRIPS} and {@link #MIN_NUM_TRIPS} of trips.
+     * @param pageNum Page number to get.
      * @param numTrips Number of trips to get.
      * @return Page object containing the trip summary dtos.
      */
-    Page<TripSummaryDto> getRecentTripSummaries(int numTrips);
+    Page<TripSummaryDto> getRecentTripSummaries(int pageNum, int numTrips);
 }

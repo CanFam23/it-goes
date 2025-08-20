@@ -24,10 +24,11 @@ public class TripController {
 
     @GetMapping("getRecentTrips")
     public ResponseEntity<List<TripSummaryDto>> getRecentTrips(
-            @RequestParam(defaultValue = "3",name = "numTrips") int numTrips
+            @RequestParam(defaultValue = "3",name = "numTrips") int numTrips,
+            @RequestParam(defaultValue = "0",name = "pageNum") int pageNum
     ){
 
-        final Page<TripSummaryDto> recentTrips = tripService.getRecentTripSummaries(numTrips);
+        final Page<TripSummaryDto> recentTrips = tripService.getRecentTripSummaries(pageNum, numTrips);
 
         final List<TripSummaryDto> recentTripsList = recentTrips.getContent();
 
