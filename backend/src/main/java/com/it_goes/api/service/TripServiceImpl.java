@@ -11,12 +11,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class TripServiceImpl implements TripService{
 
-    private final Logger logger = Logger.getLogger(TripServiceImpl.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(TripServiceImpl.class);
 
     private final TripRepository tripRepo;
 
@@ -28,23 +29,23 @@ public class TripServiceImpl implements TripService{
     @Override
     public TripDto getTrip(Long tripId) {
         if (tripId == null) {
-            logger.warning("getTrip: tripId is null");
+            logger.warn("getTrip: tripId is null");
             throw new IllegalArgumentException("Trip id cannot be null");
         }
 
         if (tripId <= 0) {
-            logger.warning("getTrip: tripId ("+ tripId + ") <= 0");
+            logger.warn("getTrip: tripId {} <= 0", tripId);
             throw new IllegalArgumentException("Trip id must be greater than zero");
         }
 
         final Trip tripFound = tripRepo.findById(tripId).orElse(null);
 
         if (tripFound == null) {
-            logger.info("getTrip: Trip with ID ("+ tripId + ") not found");
+            logger.info("getTrip: Trip with ID {} not found", tripId);
             throw new NotFoundException("Trip with ID #" + tripId + " found");
         }
 
-        logger.info("getTrip: Trip with ID ("+ tripId + ") found");
+        logger.info("getTrip: Trip with ID {} found", tripId);
         return TripService.toTripDto(tripFound);
     }
 
@@ -68,6 +69,8 @@ public class TripServiceImpl implements TripService{
         if (tripsFound == null || tripsFound.isEmpty()) {
             throw new NotFoundException("No recent trips found");
         }
+
+        logger.info("getRecentTripSummaries: Found {} recent trips", tripsFound.getNumberOfElements());
 
         return tripsFound.map(TripService::toTripSummaryDto);
     }
