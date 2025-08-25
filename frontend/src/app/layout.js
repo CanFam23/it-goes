@@ -1,6 +1,7 @@
 import { anonymousPro, inter } from "./ui/fonts";
 import "./globals.css";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 export const metadata = {
   title: "Create Next App",
@@ -8,6 +9,20 @@ export const metadata = {
 };
 
 const links = ["About","Trips","Gallery","Log in"]
+
+const socialLinks = {
+  YouTube: {
+    "It Goes Productions": "https://www.youtube.com/itgoesproductions"
+  },
+  Instagram: {
+    "nick.clouse": "https://www.instagram.com/nick.clouse",
+    "sweatskis": "https://www.instagram.com/sweatskis",
+    "connor.marland": "https://www.instagram.com/connor.marland",
+  },
+  Tiktok: {
+    "sweatskis": "https://www.tiktok.com/@bubblebutt69"
+  }
+}
 
 export default function RootLayout({ children }) {
   return (
@@ -19,7 +34,11 @@ export default function RootLayout({ children }) {
         className="font-inter antialiased bg-[url('/topography.svg')] bg-repeat"
       >
       <Navbar links={links} />
+      <main className="flex">
+        {/*<p className="h-lvh"></p>*/}
         {children}
+      </main>
+      <Footer links={socialLinks} />
       </body>
     </html>
   );
