@@ -1,16 +1,23 @@
-import {Menu, LogIn} from "lucide-react";
+"use client";
 
+import {Menu, LogIn, X} from "lucide-react";
+import {useState} from "react";
+
+// Navbar component
 export default function Navbar(props) {
   const linksContent = props.links.map((link, key) => (
     <p
       key={key}
       className={`font-anon font-bold text-2xl lg:text-3xl text-nowrap mt-auto mb-2 ${
         key === props.links.length - 1 ? "ml-auto mr-4 flex flex-nowrap" : ""
-      }`}
+      }`} // Last link (Login) gets pushed to right
     >
       {link}
     </p>
   ));
+
+  // Keeps track of when to display ham menu
+  const [displayHamMenu, setDisplayHamMenu] = useState(false);
 
   return (
         <header>
@@ -20,12 +27,54 @@ export default function Navbar(props) {
                 {linksContent}
               </div>
               <button
+                onClick={() => setDisplayHamMenu(true)}
                 className="sm:hidden w-full"
                 aria-label="Open navigation menu"
               >
-                <Menu className="sm:hidden ml-auto mr-3 size-10 hover:cursor-pointer"/>
+                {/*Hide nav menu when ham menu is displayed*/}
+                {!displayHamMenu && <Menu className="sm:hidden ml-auto mr-3 size-10 hover:cursor-pointer"/>}
               </button>
             </nav>
+          <Hamburger
+            links={props.links}
+            display = {displayHamMenu}
+            setDisplay = {setDisplayHamMenu}
+          />
         </header>
     );
+}
+
+function Hamburger(props) {
+  if (!props.display){
+    return null; // Return nothing if not display
+  }
+
+  // Make HTML with links
+  const linksContent = props.links.map((link, key) => (
+    <p
+      key={key}
+      className="font-anon font-bold text-2xl text-nowrap py-2 pr-15"
+    >
+      {link}
+    </p>
+  ));
+
+  return (
+    <>
+      <div
+        // Allow user to click out of menu to hide it
+        onClick={() => props.setDisplay(false)}
+        className="fixed bg-black/20 top-0 left-0 w-full h-full">
+      </div>
+      <nav
+        className="bg-background fixed top-0 right-0 flex flex-col h-full
+        border-black border-l-2 p-2 animate-slide-in"
+      >
+        <button onClick={() => props.setDisplay(false)}
+                className="ml-auto mr-2 mt-3"
+        ><X size={30}/></button>
+        {linksContent}
+      </nav>
+    </>
+  );
 }

@@ -17,4 +17,17 @@
 
   --font-inter: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-anon: var(--font-anon-pro), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --animate-slide-in: slideInFromRight 0.5s ease-in-out forwards;
+
+  @keyframes slideInFromRight {
+    0% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0%);
+      opacity: 1;
+    }
+  }
 }
