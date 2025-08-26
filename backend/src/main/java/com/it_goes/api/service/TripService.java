@@ -9,7 +9,6 @@ import org.springframework.data.domain.Page;
 
 public interface TripService {
     int MIN_NUM_TRIPS = 1;
-
     int MAX_NUM_TRIPS = 5;
 
     /**
@@ -18,8 +17,11 @@ public interface TripService {
      * @return A new Trip Summary Dto object.
      */
     static TripSummaryDto toTripSummaryDto(Trip trip) {
+        String desc = trip.getDescription();
+        desc = desc.substring(0, Math.min(desc.length(), 230));
+        desc += "...";
         return new TripSummaryDto(trip.getId(), trip.getTitle(),
-                trip.getDescription(), trip.getLocation().getName(),
+                desc, trip.getLocation().getName(),
                 trip.getLocation().getState().getName(), trip.getDateOfTrip());
     }
 
