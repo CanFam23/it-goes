@@ -42,9 +42,15 @@ export default function Footer(props) {
                 </a>
               ))}
             </div>
+            <div>
+            </div>
           </div>
         );
       })}
+      <div></div>
+      <div className="w-full text-center mt-10 text-nowrap text-sm">
+        © 2025 Nick Clouse
+      </div>
     </footer>
   )
 }
