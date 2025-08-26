@@ -31,3 +31,15 @@
     }
   }
 }
+
+.error-msg{
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  background-color: red;
+  max-width: 50%;
+  align-self: center;
+  justify-self: center;
+  padding: 5px;
+  border-radius: 15px;
+}
