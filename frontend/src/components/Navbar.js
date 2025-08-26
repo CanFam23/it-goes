@@ -52,13 +52,14 @@ function Hamburger(props) {
   }
 
   // Make HTML with links
-  const linksContent = props.links.map((link, key) => (
-    <p
+  const linksContent = Object.entries(props.links).map(([key, link]) => (
+    <Link
+      href={link}
       key={key}
-      className="font-anon font-bold text-2xl text-nowrap py-2 pr-15"
+      className="font-anon font-bold text-2xl text-nowrap py-2 pr-15 hover:underline"
     >
-      {link}
-    </p>
+      {key}
+    </Link>
   ));
 
   return (
@@ -74,7 +75,7 @@ function Hamburger(props) {
       >
         <button onClick={() => props.setDisplay(false)}
                 className="ml-auto mr-2 mt-3"
-        ><X size={30}/></button>
+        ><X size={30} className="hover:cursor-pointer"/></button>
         {linksContent}
       </nav>
     </>

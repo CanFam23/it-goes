@@ -7,7 +7,7 @@ export default function TripSummaryCard({trip}) {
     <article className="bg-background flex flex-row w-full">
       <div className="w-full m-5 mr-0 min-w-[40vw]">
         <Image
-          src="/images/group_pic.jpg"
+          src={trip.imageURL}
           alt={`${trip.title} cover image`}
           width={1200}
           height={600}
