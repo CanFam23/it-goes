@@ -1,19 +1,21 @@
 "use client";
+import Link from "next/Link";
 
 import {Menu, LogIn, X} from "lucide-react";
 import {useState} from "react";
 
 // Navbar component
 export default function Navbar(props) {
-  const linksContent = props.links.map((link, key) => (
-    <p
+  const linksContent = Object.entries(props.links).map(([key, link]) => (
+    <Link
+      href={link}
       key={key}
-      className={`font-anon font-bold text-2xl lg:text-3xl text-nowrap mt-auto mb-2 ${
-        key === props.links.length - 1 ? "ml-auto mr-4 flex flex-nowrap" : ""
+      className={`font-anon font-bold text-2xl lg:text-3xl text-nowrap mt-auto mb-2 hover:underline ${
+        key === "Log in" ? "ml-auto mr-4 flex flex-nowrap" : ""
       }`} // Last link (Login) gets pushed to right
     >
-      {link}
-    </p>
+      {key}
+    </Link>
   ));
 
   // Keeps track of when to display ham menu
