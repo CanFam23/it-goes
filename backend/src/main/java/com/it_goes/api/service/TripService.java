@@ -19,7 +19,7 @@ public interface TripService {
     static TripSummaryDto toTripSummaryDto(Trip trip) {
         return new TripSummaryDto(trip.getId(), trip.getTitle(),
                 trip.getDescription(), trip.getLocation().getName(),
-                trip.getLocation().getState().getName(), trip.getDateOfTrip());
+                trip.getLocation().getState().getName(), trip.getDateOfTrip(), ImageService.buildImageUrl(trip.getCoverImageKey()));
     }
 
     /**

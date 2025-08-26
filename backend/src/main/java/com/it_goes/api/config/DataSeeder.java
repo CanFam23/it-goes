@@ -25,7 +25,7 @@ public class DataSeeder {
     @Transactional
     void seedData(TripRepository tr, LocationRepository lr, UserRepository ur, SeasonRepository sr,
                   SocialLinkRepository slr, ImageRepository ir){
-        final Image profileImg = new Image("images/DSC02232.JPG","https://it-goes.s3.us-east-2.amazonaws.com/images/DSC02232.JPG","nclouse-pi") ;
+        final Image profileImg = new Image("images/DSC02232.JPG","nclouse-pi") ;
         final User newUser = new User("nclouse","nickclouse03@gmail.com", "password","Nick","Clouse", profileImg);
 
         final SocialLink sl = new SocialLink("https://www.instagram.com/nick.clouse/", Social.INSTAGRAM);
@@ -40,6 +40,7 @@ public class DataSeeder {
         sr.save(season);
         season.addTrip(t);
         t.setSeason(season);
+        t.setCoverImageKey("images/DSC02993.jpg");
 
         newUser.addTripPosted(t);
 

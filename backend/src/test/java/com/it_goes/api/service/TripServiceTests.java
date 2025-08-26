@@ -39,7 +39,7 @@ public class TripServiceTests {
     @BeforeAll
     static void setUp(){
         user = new User("test","test@test.com","hash",
-                "john","doe",new Image("key","url","name"));
+                "john","doe",new Image("key","name"));
         location = new Location("test mtn", State.MT, Country.US);
     }
 

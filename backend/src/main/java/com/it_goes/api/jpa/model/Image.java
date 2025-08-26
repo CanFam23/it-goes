@@ -15,9 +15,8 @@ import lombok.*;
 @Table(name = "image")
 public class Image {
 
-    public Image(String s3Key, String imageUrl, String imageName){
+    public Image(String s3Key, String imageName){
         this.s3Key = s3Key;
-        this.imageUrl = imageUrl;
         this.imageName = imageName;
     }
 
@@ -28,10 +27,6 @@ public class Image {
     @Setter
     @Column(nullable = false)
     private String s3Key;
-
-    @Setter
-    @Column(nullable = false)
-    private String imageUrl;
 
     @Setter
     @Column(nullable = false)

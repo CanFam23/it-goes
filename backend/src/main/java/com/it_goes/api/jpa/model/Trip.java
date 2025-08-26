@@ -90,6 +90,10 @@ public class Trip {
     @JoinColumn(name="season_id")
     private Season season;
 
+    @Setter
+    @Column(nullable = false)
+    private String coverImageKey;
+
     // Unidirectional
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
