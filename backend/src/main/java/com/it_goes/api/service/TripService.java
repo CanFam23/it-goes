@@ -17,11 +17,8 @@ public interface TripService {
      * @return A new Trip Summary Dto object.
      */
     static TripSummaryDto toTripSummaryDto(Trip trip) {
-        String desc = trip.getDescription();
-        desc = desc.substring(0, Math.min(desc.length(), 230));
-        desc += "...";
         return new TripSummaryDto(trip.getId(), trip.getTitle(),
-                desc, trip.getLocation().getName(),
+                trip.getDescription(), trip.getLocation().getName(),
                 trip.getLocation().getState().getName(), trip.getDateOfTrip());
     }
 

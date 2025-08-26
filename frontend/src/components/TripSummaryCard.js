@@ -25,7 +25,7 @@ export default function TripSummaryCard({trip}) {
             bg-white border-black border-1 rounded-lg px-1 text-nowrap h-fit ml-auto mr-1">{trip.dateOfTrip}</p>
         </div>
         <p
-        className="text-[0.5rem] sm:text-sm md:text-lg"
+        className="text-[0.5rem] sm:text-sm md:text-lg line-clamp-4 md:line-clamp-6"
         >{trip.desc}</p>
         <Link
           href=""
