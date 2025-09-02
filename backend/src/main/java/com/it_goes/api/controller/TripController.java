@@ -8,7 +8,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +26,7 @@ public class TripController {
     }
 
     @GetMapping("getRecentTrips")
-    public ResponseEntity<List<TripSummaryDto>> getRecentTrips(
+    public ResponseEntity<Map<String,Object>> getRecentTrips(
             @RequestParam(defaultValue = "3",name = "numTrips") int numTrips,
             @RequestParam(defaultValue = "0",name = "pageNum") int pageNum
     ){
@@ -34,6 +37,11 @@ public class TripController {
 
         logger.info("getRecentTrips: (numTrips: {}) Found {} recent trips.", numTrips, recentTripsList.size());
 
-        return ResponseEntity.ok(recentTripsList);
+        final Map<String, Object> tripData = new HashMap<>();
+
+        tripData.put("trips", recentTripsList);
+        tripData.put("numPages", recentTrips.getTotalPages());
+
+        return ResponseEntity.ok(tripData);
     }
 }

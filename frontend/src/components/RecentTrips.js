@@ -23,7 +23,9 @@ export default async function RecentTrips({tripsParam, page}){
     )
   }
 
-  const trips = await res.json();
+  const tripData = await res.json();
+
+  const trips = tripData.trips;
 
   console.log(`Successfully retrieved trips`);
   console.log(trips);
