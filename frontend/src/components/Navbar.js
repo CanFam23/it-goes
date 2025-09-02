@@ -24,7 +24,9 @@ export default function Navbar(props) {
   return (
         <header>
             <nav className="bg-background flex w-full">
-                <h1 className="font-bold text-5xl lg:text-6xl m-2 text-nowrap">It Goes</h1>
+                <Link href="/">
+                  <h1 className="font-bold text-5xl lg:text-6xl m-2 text-nowrap">It Goes</h1>
+                </Link>
               <div className="hidden sm:flex space-x-5 ml-4 w-full">
                 {linksContent}
               </div>

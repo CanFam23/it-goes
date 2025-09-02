@@ -3,6 +3,14 @@ import Link from "next/link";
 import { MapPin } from 'lucide-react';
 
 export default function TripSummaryCard({trip}) {
+  // Convert date to more readable format for users
+  // TODO error handling
+  const dateOfTrip = new Date(trip.dateOfTrip).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
   return (
     <article className="bg-background flex flex-row w-full">
       <div className="w-full m-5 mr-0 min-w-[40vw]">
@@ -22,7 +30,7 @@ export default function TripSummaryCard({trip}) {
           <MapPin className="w-[0.6rem] sm:w-[3rem] align-top -my-2 sm:my-0"/>
           <p className="text-[0.4rem] sm:text-md md:text-lg">{trip.locationName}, {trip.stateCountry}</p>
           <p className="text-[0.5rem] sm:text-md md:text-lg
-            bg-white border-black border-1 rounded-lg px-1 text-nowrap h-fit ml-auto mr-1">{trip.dateOfTrip}</p>
+            bg-white border-black border-1 rounded-lg px-1 text-nowrap h-fit ml-auto mr-1">{dateOfTrip}</p>
         </div>
         <p
         className="text-[0.5rem] sm:text-sm md:text-lg line-clamp-4 md:line-clamp-6"
