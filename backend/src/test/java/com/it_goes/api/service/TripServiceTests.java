@@ -102,7 +102,7 @@ public class TripServiceTests {
 
         when(tripRepo.findAllByOrderByDateOfTripDesc(any(Pageable.class))).thenReturn(page);
 
-        final Page<TripSummaryDto> tripsFound = tripService.getRecentTripSummaries(0,2);
+        final Page<TripSummaryDto> tripsFound = tripService.getRecentTripSummaries(2,0);
 
         assertThat(tripsFound.getTotalElements()).isEqualTo(trips.size());
 
@@ -117,20 +117,20 @@ public class TripServiceTests {
 
     @Test
     void getRecentTripSummaries_noneFound_throwsException(){
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(0,2)).isInstanceOf(NotFoundException.class);
+        assertThatThrownBy(() -> tripService.getRecentTripSummaries(2,0)).isInstanceOf(NotFoundException.class);
         verify(tripRepo, times(1)).findAllByOrderByDateOfTripDesc(any(Pageable.class));
     }
 
     @Test
     void getRecentTripSummaries_invalidNumTrips(){
         // Shouldn't be able to get -1 trips
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(0,-1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> tripService.getRecentTripSummaries(-1,0)).isInstanceOf(IllegalArgumentException.class);
         verify(tripRepo, never()).findAllByOrderByDateOfTripDesc(any(Pageable.class));
 
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(0,TripService.MIN_NUM_TRIPS-1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> tripService.getRecentTripSummaries(TripService.MIN_NUM_TRIPS-1,0)).isInstanceOf(IllegalArgumentException.class);
         verify(tripRepo, never()).findAllByOrderByDateOfTripDesc(any(Pageable.class));
 
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(0,TripService.MAX_NUM_TRIPS+1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> tripService.getRecentTripSummaries(TripService.MAX_NUM_TRIPS+1,0)).isInstanceOf(IllegalArgumentException.class);
         verify(tripRepo, never()).findAllByOrderByDateOfTripDesc(any(Pageable.class));
     }
 
@@ -144,7 +144,7 @@ public class TripServiceTests {
     void getRecentTripSummaries_PageNotFound(){
         when(tripRepo.findAllByOrderByDateOfTripDesc(any(Pageable.class)))
                 .thenReturn(Page.empty());
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(1,3)).isInstanceOf(NotFoundException.class);
+        assertThatThrownBy(() -> tripService.getRecentTripSummaries(3,1)).isInstanceOf(NotFoundException.class);
         verify(tripRepo, times(1)).findAllByOrderByDateOfTripDesc(any(Pageable.class));
     }
 }

@@ -32,20 +32,24 @@ public class DataSeeder {
         newUser.addSocialLink(sl);
 
         final Location location = new Location("Beehive Basin", State.MT, Country.US);
-        final Trip t = new Trip("4th of July Couloir", newUser, location, LocalDate.of(2025,6,1));
-        t.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-
-        final Season season = new Season(LocalDate.of(2024,11,1),LocalDate.of(2025,10,1));
-
-        sr.save(season);
-        season.addTrip(t);
-        t.setSeason(season);
-        t.setCoverImageKey("images/DSC02993.jpg");
-
-        newUser.addTripPosted(t);
 
         ur.save(newUser);
         lr.save(location);
-        tr.save(t);
+
+        for(int i = 0; i < 5; i++){
+            final Trip t = new Trip("4th of July Couloir " + i, newUser, location, LocalDate.of(2025,6,i + 1));
+            t.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+
+            final Season season = new Season(LocalDate.of(2024,11,1),LocalDate.of(2025,10,1));
+
+            sr.save(season);
+            season.addTrip(t);
+            t.setSeason(season);
+            t.setCoverImageKey("images/DSC02993.jpg");
+
+            newUser.addTripPosted(t);
+
+            tr.save(t);
+        }
     }
 }

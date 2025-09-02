@@ -57,16 +57,16 @@ public class TripServiceImpl implements TripService{
      * */
     @Override
     @Transactional
-    public Page<TripSummaryDto> getRecentTripSummaries(int pageNum, int numTrips) {
-        if (numTrips < TripService.MIN_NUM_TRIPS || numTrips > TripService.MAX_NUM_TRIPS) {
-            throw new IllegalArgumentException("Number of trips (" + numTrips + ") is out of range");
+    public Page<TripSummaryDto> getRecentTripSummaries(int pageSize, int pageNum) {
+        if (pageSize < TripService.MIN_NUM_TRIPS || pageSize > TripService.MAX_NUM_TRIPS) {
+            throw new IllegalArgumentException("Number of trips (" + pageSize + ") is out of range");
         }
 
         if (pageNum < 0) {
             throw new IllegalArgumentException("Page number (" + pageNum + ") must be greater than zero");
         }
 
-        final Pageable pageable = PageRequest.of(pageNum, numTrips);
+        final Pageable pageable = PageRequest.of(pageNum, pageSize);
 
         final Page<Trip> tripsFound = tripRepo.findAllByOrderByDateOfTripDesc(pageable);
 
