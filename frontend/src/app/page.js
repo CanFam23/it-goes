@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import Image from "next/image";
-import TripSummaryCard from "@/components/TripSummaryCard";
+import RecentTrips from "@/components/RecentTrips";
 import Link from "next/link";
 
 export default function Home() {
@@ -40,40 +40,11 @@ export default function Home() {
         <h2 className="w-fit font-anon text-3xl sm:text-4xl font-bold text-nowrap px-5">Recent Trips</h2>
         <hr className="w-full border-t border-2 border-black place-self-center"/>
       </div>
-      <RecentTrips />
+      <RecentTrips
+      tripsParam={3}
+      page={0}
+      />
     </section>
   );
 }
 
-async function RecentTrips(){
-  const h = await headers();
-  const proto = h.get('x-forwarded-proto') || 'http';
-  const host = h.get('host');
-  const base = `${proto}://${host}`; // e.g. http://localhost:3000 in dev
-
-  const res = await fetch(`${base}/api/getRecentTrips`, {
-    cache: 'no-store', // or: next: { revalidate: 60 }
-  });
-  if (!res.ok) {
-    console.log(res);
-    return (
-      <p className="error-msg">
-        Error fetching recent trips
-      </p>
-    )
-  }
-
-  const trips = await res.json();
-
-  console.log(`Successfully retrieved trips`);
-  console.log(trips);
-
-  return (
-    <div>
-      {Object.entries(trips).map(([key, trip]) => (
-        <TripSummaryCard key={key} trip={trip}/>
-      ))}
-    </div>
-  );
-
-}
