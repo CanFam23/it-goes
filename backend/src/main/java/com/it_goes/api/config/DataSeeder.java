@@ -33,6 +33,10 @@ public class DataSeeder {
 
         final Location location = new Location("Beehive Basin", State.MT, Country.US);
 
+        final Season season = new Season(LocalDate.of(2024,11,1),LocalDate.of(2025,10,1));
+
+        sr.save(season);
+
         ur.save(newUser);
         lr.save(location);
 
@@ -40,9 +44,6 @@ public class DataSeeder {
             final Trip t = new Trip("4th of July Couloir " + i, newUser, location, LocalDate.of(2025,6,i + 1));
             t.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
 
-            final Season season = new Season(LocalDate.of(2024,11,1),LocalDate.of(2025,10,1));
-
-            sr.save(season);
             season.addTrip(t);
             t.setSeason(season);
             t.setCoverImageKey("images/DSC02993.jpg");
