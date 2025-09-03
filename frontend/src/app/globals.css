@@ -42,3 +42,26 @@
   padding: 5px;
   border-radius: 15px;
 }
+
+.btn{
+  background-color: var(--background-btn);
+  border-color: var(--border-btn);
+  font-weight: bold;
+  border-width: 2px;
+  border-radius: 12px;
+  padding: 5px 10px;
+}
+
+.btn:hover{
+  background-color: #f3f4f6;
+  border-color: black;
+}
+
+.active-page{
+  color: white;
+  background-color: black;
+}
+
+.active-page:hover{
+  color: black;
+}
