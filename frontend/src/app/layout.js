@@ -39,7 +39,7 @@ export default function RootLayout({ children }) {
         className="font-inter antialiased bg-[url('/topography.svg')] bg-repeat"
       >
       <Navbar links={links} />
-      <main className="flex my-20 mx-10 sm:mx-20 lg:mx-30">
+      <main className="flex my-10 mx-10 sm:mx-20 lg:mx-30">
         {/*<p className="h-lvh"></p>*/}
         {children}
       </main>

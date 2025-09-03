@@ -12,7 +12,7 @@ export default function TripSummaryCard({trip}) {
   });
 
   return (
-    <article className="bg-background flex flex-row w-full">
+    <article className="bg-background flex flex-row w-full my-5 md:my-15">
       <div className="w-full m-5 mr-0 min-w-[40vw]">
         <Image
           src={trip.imageURL}
