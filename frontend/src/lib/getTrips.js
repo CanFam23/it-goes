@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 
-export async function getRecentTrips({
+export async function getTrips({
                                        pageSize = 3,
                                        pageNum = 0,
                                      } = {}) {
@@ -25,8 +25,8 @@ export async function getRecentTrips({
     const data = await res.json();
     console.log(`Successfully retrieved ${data.trips.length} trips`);
     return {
-      trips:data.trips,
-      totalPages: data.totalPages,
+      trips: data.trips,
+      totalPages: data.numPages,
     };
   } catch (err) {
     console.error('Failed to fetch recent trips:', err);
