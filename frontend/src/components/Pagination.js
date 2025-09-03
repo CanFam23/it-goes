@@ -63,7 +63,7 @@ export default function Pagination({
       <Link
         href={isFirst ? "#" : makeHref(0)}
         aria-disabled={isFirst}
-        className={`btn text-sm ${
+        className={`btn text-sm text-nowrap ${
           isFirst ? "cursor-not-allowed opacity-50" : "hover:bg-gray-50"
         }`}
         tabIndex={isFirst ? -1 : 0}
@@ -74,7 +74,7 @@ export default function Pagination({
       <Link
         href={isFirst ? "#" : makeHref(page - 1)}
         aria-disabled={isFirst}
-        className={`btn text-sm ${
+        className={`btn text-sm text-nowrap ${
           isFirst ? "cursor-not-allowed opacity-50" : "hover:bg-gray-50"
         }`}
         tabIndex={isFirst ? -1 : 0}
@@ -91,7 +91,7 @@ export default function Pagination({
             key={p}
             href={makeHref(p-1)}
             aria-current={isActive ? "page" : undefined}
-            className={`btn text-sm ${
+            className={`btn text-sm text-nowrap ${
               isActive
                 ? "active-page"
                 : ""
@@ -106,7 +106,7 @@ export default function Pagination({
       <Link
         href={isLast ? "#" : makeHref(page + 1)}
         aria-disabled={isLast}
-        className={`btn text-sm ${
+        className={`btn text-sm text-nowrap ${
           isLast ? "cursor-not-allowed opacity-50" : "hover:bg-gray-50"
         }`}
         tabIndex={isLast ? -1 : 0}
@@ -117,7 +117,7 @@ export default function Pagination({
       <Link
         href={isLast ? "#" : makeHref(totalPages-1)}
         aria-disabled={isLast}
-        className={`btn text-sm ${
+        className={`btn text-sm text-nowrap ${
           isLast ? "cursor-not-allowed opacity-50" : "hover:bg-gray-50"
         }`}
         tabIndex={isLast ? -1 : 0}
