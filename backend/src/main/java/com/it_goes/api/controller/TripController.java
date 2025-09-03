@@ -35,7 +35,7 @@ public class TripController {
 
         final List<TripSummaryDto> recentTripsList = recentTrips.getContent();
 
-        logger.info("getRecentTrips: (numTrips: {}) Found {} recent trips.", pageSize, recentTripsList.size());
+        logger.info("getRecentTrips: (pageSize: {}, pageNum: {}) Found {} recent trips.", pageSize, pageNum, recentTripsList.size());
 
         final Map<String, Object> tripData = new HashMap<>();
 
