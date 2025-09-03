@@ -1,9 +1,13 @@
 import { headers } from 'next/headers';
 import Image from "next/image";
 import RecentTrips from "@/components/RecentTrips";
+import { getRecentTrips } from "@/lib/getTrips";
 import Link from "next/link";
 
-export default function Home() {
+export default async function Home() {
+
+  const {trips, totalTrips} = await getRecentTrips({pageSize: 3, pageNum: 0});
+
   return (
     <section className="w-full">
       <Image src={"/images/group_pic.jpg"}
@@ -41,8 +45,7 @@ export default function Home() {
         <hr className="w-full border-t border-2 border-black place-self-center"/>
       </div>
       <RecentTrips
-      tripsParam={3}
-      page={0}
+       trips={trips}
       />
     </section>
   );
