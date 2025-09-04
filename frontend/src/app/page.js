@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import Image from "next/image";
-import RecentTrips from "@/components/RecentTrips";
+import Trips from "@/components/Trips";
 import { getTrips } from "@/lib/getTrips";
 import Link from "next/link";
 
@@ -44,7 +44,7 @@ export default async function Home() {
         <h2 className="w-fit font-anon text-3xl sm:text-4xl font-bold text-nowrap px-5">Recent Trips</h2>
         <hr className="w-full border-t border-2 border-black place-self-center"/>
       </div>
-      <RecentTrips
+      <Trips
        trips={trips}
       />
     </section>

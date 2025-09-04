@@ -1,4 +1,4 @@
-import RecentTrips from "@/components/RecentTrips";
+import Trips from "@/components/Trips";
 import Pagination from "@/components/Pagination";
 import ErrorMessage from "@/components/ErrorMessage";
 import {getTrips} from "@/lib/getTrips";
@@ -19,7 +19,7 @@ export default async function Page({ searchParams }) {
 
   return (
     <section className="w-full">
-      <RecentTrips trips={trips}/>
+      <Trips trips={trips}/>
 
       <Pagination
         page={page}
