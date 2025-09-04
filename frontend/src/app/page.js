@@ -3,6 +3,7 @@ import Image from "next/image";
 import Trips from "@/components/Trips";
 import { getTrips } from "@/lib/getTrips";
 import Link from "next/link";
+import Title from "@/components/Title";
 
 export default async function Home() {
 
@@ -16,11 +17,7 @@ export default async function Home() {
              height={600}
              className="w-full md:max-w-2/3 place-self-center shadow-md"
       />
-      <div className="flex flex-row my-10">
-        <hr className="w-full border-t border-2 border-black place-self-center"/>
-        <h2 className="w-fit font-anon text-3xl sm:text-4xl font-bold text-nowrap px-5">About Us</h2>
-        <hr className="w-full border-t border-2 border-black place-self-center"/>
-      </div>
+      <Title title="About Us"/>
       <div className="bg-background w-full p-5 flex flex-col text-center rounded-m shadow-lg">
         <article>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
@@ -39,11 +36,7 @@ export default async function Home() {
           Learn More
         </Link>
       </div>
-      <div className="flex flex-row my-10">
-        <hr className="w-full border-t border-2 border-black place-self-center"/>
-        <h2 className="w-fit font-anon text-3xl sm:text-4xl font-bold text-nowrap px-5">Recent Trips</h2>
-        <hr className="w-full border-t border-2 border-black place-self-center"/>
-      </div>
+      <Title title="Recent Trips"/>
       <Trips
        trips={trips}
       />

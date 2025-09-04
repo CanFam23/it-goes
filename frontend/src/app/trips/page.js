@@ -2,6 +2,7 @@ import Trips from "@/components/Trips";
 import Pagination from "@/components/Pagination";
 import ErrorMessage from "@/components/ErrorMessage";
 import {getTrips} from "@/lib/getTrips";
+import Title from "@/components/Title";
 
 export default async function Page({ searchParams }) {
   const searchParam = await searchParams;
@@ -19,6 +20,8 @@ export default async function Page({ searchParams }) {
 
   return (
     <section className="w-full">
+      <Title title="Trips"/>
+
       <Trips trips={trips}/>
 
       <Pagination
