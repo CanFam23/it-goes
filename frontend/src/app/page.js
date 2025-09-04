@@ -14,14 +14,14 @@ export default async function Home() {
              alt={"Group picture of it goes group"}
              width={1200}
              height={600}
-             className="w-full md:max-w-2/3 place-self-center"
+             className="w-full md:max-w-2/3 place-self-center shadow-md"
       />
       <div className="flex flex-row my-10">
         <hr className="w-full border-t border-2 border-black place-self-center"/>
         <h2 className="w-fit font-anon text-3xl sm:text-4xl font-bold text-nowrap px-5">About Us</h2>
         <hr className="w-full border-t border-2 border-black place-self-center"/>
       </div>
-      <div className="bg-background w-full p-5 flex flex-col text-center rounded-m">
+      <div className="bg-background w-full p-5 flex flex-col text-center rounded-m shadow-lg">
         <article>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
           incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
