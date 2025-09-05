@@ -20,9 +20,9 @@ import lombok.*;
 @Table(name = "season")
 public class Season {
 
-    public Season(LocalDate start, LocalDate end) {
-        this.startDate = start;
-        this.endDate = end;
+    public Season(int year) {
+        this.startDate = LocalDate.of(year, 10, 1);
+        this.endDate = this.startDate.plusYears(1).minusDays(1);
     }
 
     @Id

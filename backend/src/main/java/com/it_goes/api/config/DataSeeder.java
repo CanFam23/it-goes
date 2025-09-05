@@ -33,7 +33,7 @@ public class DataSeeder {
 
         final Location location = new Location("Beehive Basin", State.MT, Country.US);
 
-        final Season season = new Season(LocalDate.of(2024,11,1),LocalDate.of(2025,10,1));
+        final Season season = new Season(2024);
 
         sr.save(season);
 
