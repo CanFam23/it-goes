@@ -40,6 +40,12 @@ public class DataSeeder {
         ur.save(newUser);
         lr.save(location);
 
+        final User newUser2 = new User("cmar","connor@gmail.com", "password","Connor","Marland",null);
+        final User newUser3 = new User("jswea","jake@gmail.com", "password","Jake","Sweatland",null);
+
+        ur.save(newUser2);
+        ur.save(newUser3);
+
         for(int i = 0; i < 8; i++){
             final Trip t = new Trip("4th of July Couloir " + i, newUser, location, LocalDate.of(2025,6,i + 1));
             t.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
@@ -49,6 +55,8 @@ public class DataSeeder {
             t.setCoverImageKey("images/DSC02993.jpg");
 
             newUser.addTripPosted(t);
+            newUser2.addTrip(t);
+            newUser3.addTrip(t);
 
             tr.save(t);
         }
