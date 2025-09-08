@@ -8,13 +8,15 @@ import com.it_goes.api.jpa.repo.UserRepository;
 import com.it_goes.api.util.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class UserServiceImpl implements UserService{
 
-    private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final UserRepository userRepo;
 
