@@ -9,7 +9,6 @@ import com.it_goes.api.util.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,6 +73,7 @@ public class UserServiceImpl implements UserService{
      */
     @Override
     public List<FirstNameDays> getDaysSkied(int year) {
+        // Not the best practice, but I highly doubt I'm going to be posting a season outside of these years
         if (year < 2000 || year > 2100) {
             logger.error("getDaysSkied: Invalid year #{}", year);
             throw new IllegalArgumentException("Invalid year #" + year);
