@@ -3,6 +3,7 @@ package com.it_goes.api.service;
 import com.it_goes.api.jpa.model.Season;
 import com.it_goes.api.jpa.model.User;
 import com.it_goes.api.jpa.projection.FirstNameDays;
+import com.it_goes.api.jpa.repo.SeasonRepository;
 import com.it_goes.api.jpa.repo.UserRepository;
 import com.it_goes.api.util.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,8 +34,11 @@ public class UserServiceTests {
     @Mock
     UserRepository userRepo;
 
+    @Mock
+    SeasonRepository seasonRepo;
+
     @InjectMocks
-    private UserService userService;
+    private UserServiceImpl userService;
 
     private static User user;
 
@@ -66,13 +70,13 @@ public class UserServiceTests {
 
     @Test
     void getUser_invalidID_throwsException(){
-        assertThatThrownBy(() -> userService.getUser(-1L)).isInstanceOf(NotFoundException.class);
+        assertThatThrownBy(() -> userService.getUser(-1L)).isInstanceOf(IllegalArgumentException.class);
         verify(userRepo, never()).findById(-1L); // ensure repo was never called
     }
 
     @Test
     void getUser_nullID_throwsException(){
-        assertThatThrownBy(() -> userService.getUser(null)).isInstanceOf(NotFoundException.class);
+        assertThatThrownBy(() -> userService.getUser(null)).isInstanceOf(IllegalArgumentException.class);
         verify(userRepo, never()).findById(-1L); // ensure repo was never called
     }
 
@@ -81,38 +85,38 @@ public class UserServiceTests {
         when(userRepo.findByUsername("testuser")).thenReturn(Optional.of(user));
         final User userFound = userService.getUserByUsername("testUser");
         assertThat(userFound).isEqualTo(user);
-        verify(userRepo, times(1)).findByUsername("testUser");
+        verify(userRepo, times(1)).findByUsername("testuser");
     }
 
     @Test
     void getUserByUsername_whitespaces_returnsUser(){
-        when(userRepo.findByUsername("testUser")).thenReturn(Optional.of(user));
+        when(userRepo.findByUsername("testuser")).thenReturn(Optional.of(user));
         final User userFound = userService.getUserByUsername("     testUser     ");
         assertThat(userFound).isEqualTo(user);
-        verify(userRepo, times(1)).findByUsername("testUser");
+        verify(userRepo, times(1)).findByUsername("testuser");
     }
 
     @Test
     void getUserByUsername_someCapitalLetters_returnsUser(){
-        when(userRepo.findByUsername("tEStUser")).thenReturn(Optional.of(user));
-        final User userFound = userService.getUserByUsername("     testUser     ");
+        when(userRepo.findByUsername("testuser")).thenReturn(Optional.of(user));
+        final User userFound = userService.getUserByUsername("teStUSer");
         assertThat(userFound).isEqualTo(user);
-        verify(userRepo, times(1)).findByUsername("testUser");
+        verify(userRepo, times(1)).findByUsername("testuser");
     }
 
     @Test
     void getUserByUsername_allCapitalLetters_returnsUser(){
-        when(userRepo.findByUsername("TESTUSER")).thenReturn(Optional.of(user));
-        final User userFound = userService.getUserByUsername("     testUser     ");
+        when(userRepo.findByUsername("testuser")).thenReturn(Optional.of(user));
+        final User userFound = userService.getUserByUsername("TESTUSER");
         assertThat(userFound).isEqualTo(user);
-        verify(userRepo, times(1)).findByUsername("testUser");
+        verify(userRepo, times(1)).findByUsername("testuser");
     }
 
     @Test
     void getUserByUsername_userNotFound(){
         when(userRepo.findByUsername("test")).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.getUserByUsername("test")).isInstanceOf(NotFoundException.class);
-        verify(userRepo, never()).findByUsername("test");
+        verify(userRepo, times(1)).findByUsername("test");
     }
 
     @Test
@@ -157,6 +161,7 @@ public class UserServiceTests {
                 fd("Bob", 7)
         );
         when(userRepo.getDaysSkied(season.getStartDate(),season.getEndDate())).thenReturn(mockResult);
+        when(seasonRepo.findByStartYear(year)).thenReturn(Optional.of(season));
 
         final List<FirstNameDays> result = userService.getDaysSkied(year);
 
@@ -177,6 +182,7 @@ public class UserServiceTests {
         final int year = 2023;
         final Season season = new Season(year);
         when(userRepo.getDaysSkied(season.getStartDate(),season.getEndDate())).thenReturn(List.of());
+        when(seasonRepo.findByStartYear(year)).thenReturn(Optional.of(season));
 
         final List<FirstNameDays> result = userService.getDaysSkied(year);
 
