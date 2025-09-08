@@ -42,6 +42,7 @@ public interface UserService {
      * @param id ID to search for
      * @return User object of user found
      * @throws NotFoundException If a user with the given ID isn't found
+     * @throws IllegalArgumentException If given id is null or less than 1
      */
     User getUser(Long id);
 
