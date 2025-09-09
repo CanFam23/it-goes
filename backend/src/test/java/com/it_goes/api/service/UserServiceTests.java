@@ -2,7 +2,7 @@ package com.it_goes.api.service;
 
 import com.it_goes.api.jpa.model.Season;
 import com.it_goes.api.jpa.model.User;
-import com.it_goes.api.jpa.projection.FirstNameDays;
+import com.it_goes.api.jpa.projection.FirstNameDaysYear;
 import com.it_goes.api.jpa.repo.SeasonRepository;
 import com.it_goes.api.jpa.repo.UserRepository;
 import com.it_goes.api.util.exception.NotFoundException;
@@ -24,10 +24,11 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTests {
-    private static FirstNameDays fd(String firstName, int days) {
-        return new FirstNameDays() {
+    private static FirstNameDaysYear fd(String firstName, int days, int year) {
+        return new FirstNameDaysYear() {
             @Override public String getFirstName() { return firstName; }
             @Override public int getDaysSkied() { return days; }
+            @Override public Integer getYear() { return year; }
         };
     }
 
@@ -156,22 +157,43 @@ public class UserServiceTests {
     void getDaysSkied_validYear_returnsList() {
         final int year = 2024;
         final Season season = new Season(year);
-        final List<FirstNameDays> mockResult = List.of(
-                fd("Alice", 12),
-                fd("Bob", 7)
+        final List<FirstNameDaysYear> mockResult = List.of(
+                fd("Alice", 12, year),
+                fd("Bob", 7, year)
         );
         when(userRepo.getDaysSkied(season.getStartDate(),season.getEndDate())).thenReturn(mockResult);
         when(seasonRepo.findByStartYear(year)).thenReturn(Optional.of(season));
 
-        final List<FirstNameDays> result = userService.getDaysSkied(year);
+        final List<FirstNameDaysYear> result = userService.getDaysSkied(year);
 
         assertThat(result)
-                .extracting(FirstNameDays::getFirstName, FirstNameDays::getDaysSkied)
+                .extracting(FirstNameDaysYear::getFirstName, FirstNameDaysYear::getDaysSkied, FirstNameDaysYear::getYear)
                 .containsExactly(
-                        tuple("Alice", 12),
-                        tuple("Bob", 7)
+                        tuple("Alice", 12, year),
+                        tuple("Bob", 7, year)
                 );
         verify(userRepo, times(1)).getDaysSkied(season.getStartDate(),season.getEndDate());
+    }
+
+    @Test
+    void getDaysSkied_nullYear_returnsList() {
+        final int year = 2024;
+        final Season season = new Season(year);
+        final List<FirstNameDaysYear> mockResult = List.of(
+                fd("Alice", 12, year),
+                fd("Bob", 7, year)
+        );
+        when(userRepo.getDaysSkied()).thenReturn(mockResult);
+
+        final List<FirstNameDaysYear> result = userService.getDaysSkied(null);
+
+        assertThat(result)
+                .extracting(FirstNameDaysYear::getFirstName, FirstNameDaysYear::getDaysSkied, FirstNameDaysYear::getYear)
+                .containsExactly(
+                        tuple("Alice", 12, year),
+                        tuple("Bob", 7, year)
+                );
+        verify(userRepo, times(1)).getDaysSkied();
     }
 
     /**
@@ -184,7 +206,7 @@ public class UserServiceTests {
         when(userRepo.getDaysSkied(season.getStartDate(),season.getEndDate())).thenReturn(List.of());
         when(seasonRepo.findByStartYear(year)).thenReturn(Optional.of(season));
 
-        final List<FirstNameDays> result = userService.getDaysSkied(year);
+        final List<FirstNameDaysYear> result = userService.getDaysSkied(year);
 
         assertThat(result).isEmpty();
         verify(userRepo, times(1)).getDaysSkied(season.getStartDate(),season.getEndDate());

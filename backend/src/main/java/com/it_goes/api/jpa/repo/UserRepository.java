@@ -21,16 +21,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * Gets the number of days each user has skied between the start and end date
      * @param start Start date
      * @param end End date
-     * @return List of {@link FirstNameDays} projections with the numbers of days skied and the first name of the user
+     * @return List of {@link FirstNameDaysYear} projections with the numbers of days skied and the first name of the user, and the year found in the start
      */
     @Query(value = """
-     SELECT u.first_name, COUNT(*) AS days_skied FROM trip_users 
+     SELECT u.first_name, COUNT(*) AS days_skied,
+     :start AS startDate,
+     EXTRACT(YEAR FROM CAST(:start AS DATE)) AS year
+     FROM trip_users 
      JOIN trip as t ON trip_users.trip_id = t.id 
      JOIN it_goes_user as u ON trip_users.user_id = u.id 
      WHERE t.date_of_trip >= :start and t.date_of_trip <= :end
      GROUP BY u.id,u.first_name;
     """, nativeQuery = true)
-    List<FirstNameDays> getDaysSkied(@Param("start") LocalDate start, @Param("end") LocalDate end);
+    List<FirstNameDaysYear> getDaysSkied(@Param("start") LocalDate start, @Param("end") LocalDate end);
 
 
     /**

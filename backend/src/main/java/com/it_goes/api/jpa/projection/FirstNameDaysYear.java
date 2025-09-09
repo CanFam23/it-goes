@@ -5,5 +5,5 @@ public interface FirstNameDaysYear {
 
     int getDaysSkied();
 
-    int getYear();
+    Integer getYear();
 }

@@ -1,6 +1,6 @@
 package com.it_goes.api.controller;
 
-import com.it_goes.api.jpa.projection.FirstNameDays;
+import com.it_goes.api.jpa.projection.FirstNameDaysYear;
 import com.it_goes.api.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,13 +22,16 @@ public class UserController {
     }
 
     @GetMapping("getDaysSkied")
-    public ResponseEntity<List<FirstNameDays>> getDaysSkied(
-            @RequestParam(name="year", defaultValue = "2024") int year
+    public ResponseEntity<List<FirstNameDaysYear>> getDaysSkied(
+            @RequestParam(name="year", required = false) Integer year
     ){
+        if (year == null) {
+            logger.info("UserController.getDaysSkied: No year provided, getting all year count data");
+        }
 
-        final List<FirstNameDays> firstNameDays = userService.getDaysSkied(year);
+        final List<FirstNameDaysYear> firstNameDays = userService.getDaysSkied(year);
 
-        logger.info("getDaysSkied found days data for {} users", firstNameDays.size());
+        logger.info("UserController.getDaysSkied: found days data for {} users/years", firstNameDays.size());
 
         return ResponseEntity.ok(firstNameDays);
     }
