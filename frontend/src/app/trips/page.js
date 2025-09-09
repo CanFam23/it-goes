@@ -3,6 +3,8 @@ import Pagination from "@/components/Pagination";
 import ErrorMessage from "@/components/ErrorMessage";
 import {getTrips} from "@/lib/getTrips";
 import Title from "@/components/Title";
+import DaysSkiedChart from "@/components/DaysSkiedChart";
+import {getDaysSkied} from "@/lib/getDaysSkied";
 
 export default async function Page({ searchParams }) {
   const searchParam = await searchParams;
@@ -18,9 +20,15 @@ export default async function Page({ searchParams }) {
 
   const {trips, totalPages} = await getTrips({pageSize: pageSize, pageNum: page});
 
+  const year = 2024;
+
+  const daysSkied = await getDaysSkied(year);
+
   return (
     <section className="w-full">
       <Title title="Trips"/>
+
+      <DaysSkiedChart plotData={daysSkied} year={year}/>
 
       <Trips trips={trips}/>
 
