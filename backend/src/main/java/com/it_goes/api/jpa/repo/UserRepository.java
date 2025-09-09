@@ -1,6 +1,7 @@
 package com.it_goes.api.jpa.repo;
 
 import com.it_goes.api.jpa.projection.FirstNameDays;
+import com.it_goes.api.jpa.projection.FirstNameDaysYear;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,4 +31,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
      GROUP BY u.id,u.first_name;
     """, nativeQuery = true)
     List<FirstNameDays> getDaysSkied(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
+
+    /**
+     * Gets the number of days each user has skied for each season in the database
+     * @return List of {@link FirstNameDaysYear} projections with the numbers of days skied, the first name of the user, and the year
+     */
+    @Query(value = """
+     SELECT u.first_name, COUNT(*) AS days_skied, EXTRACT(year FROM s.start_date) as year 
+     FROM trip_users 
+     JOIN trip as t ON trip_users.trip_id = t.id 
+     JOIN it_goes_user as u ON trip_users.user_id = u.id 
+     JOIN season as s ON t.season_id = s.id
+    GROUP BY u.id,u.first_name, s.start_date;
+    """, nativeQuery = true)
+    List<FirstNameDaysYear> getDaysSkied();
 }
