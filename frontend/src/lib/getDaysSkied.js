@@ -1,6 +1,10 @@
 import {headers} from "next/headers";
 
 export async function getDaysSkied(year){
+  /**
+   * Given a year, calls the getDaysSkied api route to get the number of days each
+   * user in the database has skied.
+   */
   // TODO Error handling
   try {
     // Build the base URL from request headers
@@ -12,11 +16,11 @@ export async function getDaysSkied(year){
     // API route
     const res = await fetch(
       `${base}/api/getDaysSkied?year=${year}`,
-      { cache: 'no-store' }
+      { cache: 'force-cache' }
     );
 
     if (!res.ok) {
-      console.error('Error fetching days skied:', res.status, res.statusText);
+      console.warn('Error fetching days skied:', res.status, res.statusText);
       return { trips: [], total: 0 };
     }
 
@@ -24,7 +28,7 @@ export async function getDaysSkied(year){
     console.log(`Successfully retrieved days skied data`);
     return data;
   } catch (err) {
-    console.error('Failed to fetch days skied:', err);
+    console.warn('Failed to fetch days skied:', err);
     return {};
   }
 }

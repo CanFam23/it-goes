@@ -4,6 +4,10 @@ export async function getTrips({
                                        pageSize = 3,
                                        pageNum = 0,
                                      } = {}) {
+  /**
+   * Given a page size and number, calls the getTrips api route to get the
+   * requested trips.
+   */
   try {
     // Build the base URL from request headers
     const h = await headers();
@@ -13,12 +17,12 @@ export async function getTrips({
 
     // API route
     const res = await fetch(
-      `${base}/api/getRecentTrips?pageSize=${pageSize}&pageNum=${pageNum}`,
-      { cache: 'no-store' } // or { next: { revalidate: 60 } }
+      `${base}/api/getTrips?pageSize=${pageSize}&pageNum=${pageNum}`,
+      { cache: 'force-cache' }
     );
 
     if (!res.ok) {
-      console.error('Error fetching trips:', res.status, res.statusText);
+      console.warn('Error fetching trips:', res.status, res.statusText);
       return { trips: [], total: 0 };
     }
 
@@ -29,7 +33,7 @@ export async function getTrips({
       totalPages: data.numPages,
     };
   } catch (err) {
-    console.error('Failed to fetch recent trips:', err);
+    console.warn('Failed to fetch recent trips:', err);
     return { trips: [], total: 0 };
   }
 }

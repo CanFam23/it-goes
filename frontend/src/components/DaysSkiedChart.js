@@ -5,10 +5,14 @@ import { Bar } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, BarElement, Title, Tooltip, Legend, Filler );
 
-const DaysSkiedChart = ({ plotData = [], year = 2025 }) => {
+const DaysSkiedChart = ({ plotData = {trips: [], total: 0}, year = 2025 }) => {
   // TODO error handling
   const labels = [];
   const dataset = [];
+
+  if (plotData.trips.length == 0){
+    return <p className="error-msg">No data to plot</p>
+  }
 
   // Extract first name and days skied
   plotData.forEach(entry => {
