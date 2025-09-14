@@ -25,17 +25,17 @@ public class TripController {
         this.tripService = tripService;
     }
 
-    @GetMapping("getRecentTrips")
+    @GetMapping("getTrips")
     public ResponseEntity<Map<String,Object>> getRecentTrips(
             @RequestParam(defaultValue = "3",name = "pageSize") int pageSize,
             @RequestParam(defaultValue = "0",name = "pageNum") int pageNum
     ){
 
-        final Page<TripSummaryDto> recentTrips = tripService.getRecentTripSummaries(pageSize, pageNum);
+        final Page<TripSummaryDto> recentTrips = tripService.getTripSummaries(pageSize, pageNum);
 
         final List<TripSummaryDto> recentTripsList = recentTrips.getContent();
 
-        logger.info("getRecentTrips: (pageSize: {}, pageNum: {}) Found {} recent trips.", pageSize, pageNum, recentTripsList.size());
+        logger.info("getTrips: (pageSize: {}, pageNum: {}) Found {} recent trips.", pageSize, pageNum, recentTripsList.size());
 
         final Map<String, Object> tripData = new HashMap<>();
 

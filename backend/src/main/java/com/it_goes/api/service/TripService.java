@@ -51,5 +51,5 @@ public interface TripService {
      * @param pageSize Number of trips to get.
      * @return Page object containing the trip summary dtos.
      */
-    Page<TripSummaryDto> getRecentTripSummaries(int pageSize, int pageNum);
+    Page<TripSummaryDto> getTripSummaries(int pageSize, int pageNum);
 }

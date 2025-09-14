@@ -17,7 +17,6 @@ import org.springframework.data.domain.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -92,7 +91,7 @@ public class TripServiceTests {
     }
 
     @Test
-    void getRecentTripSummaries_returnsPageDto(){
+    void getTripSummaries_returnsPageDto(){
         final Pageable pageable = PageRequest.of(0,2, Sort.by("dateOfTrip").descending());
         final List<Trip> trips = List.of(
                 new Trip("Bridger Bowl", user, location, LocalDate.of(2025,1,1)),
@@ -102,7 +101,7 @@ public class TripServiceTests {
 
         when(tripRepo.findAllByOrderByDateOfTripDesc(any(Pageable.class))).thenReturn(page);
 
-        final Page<TripSummaryDto> tripsFound = tripService.getRecentTripSummaries(2,0);
+        final Page<TripSummaryDto> tripsFound = tripService.getTripSummaries(2,0);
 
         assertThat(tripsFound.getTotalElements()).isEqualTo(trips.size());
 
@@ -116,35 +115,35 @@ public class TripServiceTests {
     }
 
     @Test
-    void getRecentTripSummaries_noneFound_throwsException(){
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(2,0)).isInstanceOf(NotFoundException.class);
+    void getTripSummaries_noneFound_throwsException(){
+        assertThatThrownBy(() -> tripService.getTripSummaries(2,0)).isInstanceOf(NotFoundException.class);
         verify(tripRepo, times(1)).findAllByOrderByDateOfTripDesc(any(Pageable.class));
     }
 
     @Test
-    void getRecentTripSummaries_invalidNumTrips(){
+    void getTripSummaries_invalidNumTrips(){
         // Shouldn't be able to get -1 trips
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(-1,0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> tripService.getTripSummaries(-1,0)).isInstanceOf(IllegalArgumentException.class);
         verify(tripRepo, never()).findAllByOrderByDateOfTripDesc(any(Pageable.class));
 
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(TripService.MIN_NUM_TRIPS-1,0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> tripService.getTripSummaries(TripService.MIN_NUM_TRIPS-1,0)).isInstanceOf(IllegalArgumentException.class);
         verify(tripRepo, never()).findAllByOrderByDateOfTripDesc(any(Pageable.class));
 
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(TripService.MAX_NUM_TRIPS+1,0)).isInstanceOf(IllegalArgumentException.class);
-        verify(tripRepo, never()).findAllByOrderByDateOfTripDesc(any(Pageable.class));
-    }
-
-    @Test
-    void getRecentTripSummaries_invalidPageNum(){
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(-1,-1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> tripService.getTripSummaries(TripService.MAX_NUM_TRIPS+1,0)).isInstanceOf(IllegalArgumentException.class);
         verify(tripRepo, never()).findAllByOrderByDateOfTripDesc(any(Pageable.class));
     }
 
     @Test
-    void getRecentTripSummaries_PageNotFound(){
+    void getTripSummaries_invalidPageNum(){
+        assertThatThrownBy(() -> tripService.getTripSummaries(-1,-1)).isInstanceOf(IllegalArgumentException.class);
+        verify(tripRepo, never()).findAllByOrderByDateOfTripDesc(any(Pageable.class));
+    }
+
+    @Test
+    void getTripSummaries_PageNotFound(){
         when(tripRepo.findAllByOrderByDateOfTripDesc(any(Pageable.class)))
                 .thenReturn(Page.empty());
-        assertThatThrownBy(() -> tripService.getRecentTripSummaries(3,1)).isInstanceOf(NotFoundException.class);
+        assertThatThrownBy(() -> tripService.getTripSummaries(3,1)).isInstanceOf(NotFoundException.class);
         verify(tripRepo, times(1)).findAllByOrderByDateOfTripDesc(any(Pageable.class));
     }
 }

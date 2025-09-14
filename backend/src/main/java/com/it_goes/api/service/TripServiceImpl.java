@@ -57,7 +57,7 @@ public class TripServiceImpl implements TripService{
      * */
     @Override
     @Transactional
-    public Page<TripSummaryDto> getRecentTripSummaries(int pageSize, int pageNum) {
+    public Page<TripSummaryDto> getTripSummaries(int pageSize, int pageNum) {
         if (pageSize < TripService.MIN_NUM_TRIPS || pageSize > TripService.MAX_NUM_TRIPS) {
             throw new IllegalArgumentException("Number of trips (" + pageSize + ") is out of range");
         }
@@ -74,7 +74,7 @@ public class TripServiceImpl implements TripService{
             throw new NotFoundException("No recent trips found");
         }
 
-        logger.info("getRecentTripSummaries: Found {} recent trips", tripsFound.getNumberOfElements());
+        logger.info("getTripSummaries: Found {} recent trips", tripsFound.getNumberOfElements());
 
         return tripsFound.map(TripService::toTripSummaryDto);
     }
