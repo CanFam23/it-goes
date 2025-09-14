@@ -9,7 +9,7 @@ const socialIcons = {
 
 export default function Footer(props) {
   return (
-    <footer className="bg-background grid grid-cols-3 gap-0 justify-items-center text-start py-10">
+    <footer className="bg-background grid grid-cols-3 gap-0 justify-items-center text-start py-10 [margin-top:40vh]">
       {Object.entries(props.links).map(([platform, accounts]) => {
         const cols = Math.min(Object.keys(accounts).length, 3);
         // Grid classes for account url container
