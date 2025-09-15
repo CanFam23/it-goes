@@ -2,6 +2,7 @@ package com.it_goes.api.service;
 
 import com.it_goes.api.jpa.model.Season;
 import com.it_goes.api.jpa.model.User;
+import com.it_goes.api.jpa.projection.FirstNameDaysLocationYear;
 import com.it_goes.api.jpa.projection.FirstNameDaysYear;
 import com.it_goes.api.jpa.repo.SeasonRepository;
 import com.it_goes.api.jpa.repo.UserRepository;
@@ -105,6 +106,46 @@ public class UserServiceImpl implements UserService{
 
         if (daysSkied.isEmpty()) {
             logger.error("getDaysSkied: No days found for year #{}", year);
+        }
+
+        return daysSkied;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<FirstNameDaysLocationYear> getDaysSkiedEachLocation(Integer year) {
+        // Not the best practice, but I highly doubt I'm going to be posting a season outside of these years
+        if (year != null && ( year < 2000 || year > 2100)) {
+            logger.error("getDaysSkiedEachLocation: Invalid year #{}", year);
+            throw new IllegalArgumentException("Invalid year #" + year);
+        }
+
+        // If no year is passed, get the days skied data for all years
+        if (year == null) {
+            final List<FirstNameDaysLocationYear> daysSkied = userRepo.getDaysSkiedEachLocation();
+
+            if (daysSkied.isEmpty()) {
+                logger.error("getDaysSkiedEachLocation: No days found for any year");
+            }
+
+            return daysSkied;
+        }
+
+        // Find season with given year as it's start year
+        final Optional<Season> seasonFound = seasonRepo.findByStartYear(year);
+        if (seasonFound.isEmpty()) {
+            logger.error("getDaysSkiedEachLocation: No season found for year #{}", year);
+            throw new NotFoundException("No season found for year " + year);
+        }
+
+        final Season season = seasonFound.get();
+
+        final List<FirstNameDaysLocationYear> daysSkied = userRepo.getDaysSkiedEachLocation(season.getStartDate(), season.getEndDate());
+
+        if (daysSkied.isEmpty()) {
+            logger.error("getDaysSkiedEachLocation: No days found for year #{}", year);
         }
 
         return daysSkied;

@@ -36,6 +36,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<FirstNameDaysYear> getDaysSkied(@Param("start") LocalDate start, @Param("end") LocalDate end);
 
     /**
+     * Gets the number of days each user has skied for each season in the database
+     * @return List of {@link FirstNameDaysYear} projections with the numbers of days skied, the first name of the user, and the year
+     */
+    @Query(value = """
+     SELECT u.first_name, COUNT(*) AS days_skied, EXTRACT(year FROM s.start_date) as year
+     FROM trip_users
+     JOIN trip as t ON trip_users.trip_id = t.id
+     JOIN it_goes_user as u ON trip_users.user_id = u.id
+     JOIN season as s ON t.season_id = s.id
+     GROUP BY u.id,u.first_name, s.start_date;
+    """, nativeQuery = true)
+    List<FirstNameDaysYear> getDaysSkied();
+
+    /**
      * Gets the number of days each user has skied between the start and end date at every location in the database
      * @param start Start date
      * @param end End date
@@ -56,16 +70,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<FirstNameDaysLocationYear> getDaysSkiedEachLocation(@Param("start") LocalDate start, @Param("end") LocalDate end);
 
     /**
-     * Gets the number of days each user has skied for each season in the database
-     * @return List of {@link FirstNameDaysYear} projections with the numbers of days skied, the first name of the user, and the year
+     * Gets the number of days each user has skied between the start and end date at every location in the database
+     * @param start Start date
+     * @param end End date
+     * @return List of {@link FirstNameDaysLocationYear} projections with the numbers of days skied, the first name of the user,
+     * the location of each trip, the year found in the start variable given
      */
     @Query(value = """
-     SELECT u.first_name, COUNT(*) AS days_skied, EXTRACT(year FROM s.start_date) as year
-     FROM trip_users
-     JOIN trip as t ON trip_users.trip_id = t.id
-     JOIN it_goes_user as u ON trip_users.user_id = u.id
-     JOIN season as s ON t.season_id = s.id
-    GROUP BY u.id,u.first_name, s.start_date;
+      SELECT u.first_name, l.name, COUNT(*) AS days_skied,
+      FROM trip_users
+      JOIN trip AS t ON trip_users.trip_id = t.id
+      JOIN it_goes_user AS u ON trip_users.user_id = u.id
+      JOIN location AS l on t.location_id = l.id
+      GROUP BY u.id,u.first_name,l.name, s.start_date;
     """, nativeQuery = true)
-    List<FirstNameDaysYear> getDaysSkied();
+    List<FirstNameDaysLocationYear> getDaysSkiedEachLocation();
+
 }
