@@ -55,7 +55,8 @@ const DaysSkiedChart = ({ plotData = [], year = 2025 }) => {
       },
       title: {
         display: true,
-        text: `Resorts & Zones skied during the ${year}-${year + 1} season`,
+        text: "Resorts & Zones Skied",
+        color: '#000000',
         font: {
           size: 18,
         },

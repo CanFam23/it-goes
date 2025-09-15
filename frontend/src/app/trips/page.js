@@ -5,6 +5,7 @@ import {getTrips} from "@/lib/getTrips";
 import Title from "@/components/Title";
 import DaysSkiedChart from "@/components/DaysSkiedChart";
 import {getDaysSkied} from "@/lib/getDaysSkied";
+import DaysSkiedTotal from "@/components/DaysSkiedTotal";
 
 export default async function Page({ searchParams }) {
   const searchParam = await searchParams;
@@ -24,11 +25,18 @@ export default async function Page({ searchParams }) {
 
   const daysSkiedLocation = await getDaysSkied("getDaysSkiedLocation",year);
 
+  const daysSkied = await getDaysSkied("getDaysSkied",year);
+
   return (
     <section className="w-full">
       <Title title="Trips"/>
 
-      <DaysSkiedChart plotData={daysSkiedLocation} year={year}/>
+      <div className="bg-background p-4 shadow-lg">
+        <h3 className="font-black text-md md:text-xl lg:text-2xl place-self-center">Stats for the {year}-{year+1} Season</h3>
+        <hr className="border-t border-black my-4"/>
+        <DaysSkiedTotal daysSkiedData={daysSkied} year={year}/>
+        <DaysSkiedChart plotData={daysSkiedLocation} year={year}/>
+      </div>
 
       <Trips trips={trips}/>
 
