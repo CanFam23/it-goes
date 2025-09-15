@@ -289,7 +289,7 @@ public class UserServiceTests {
                 fdl("Alice", "Aspen", 5, year),
                 fdl("Bob", "Vail", 3, year)
         );
-        when(userRepo.getDaysSkiedEachLocation(any(), any())).thenReturn(mockResult);
+        when(userRepo.getDaysSkiedEachLocation()).thenReturn(mockResult);
 
         final List<FirstNameDaysLocationYear> result = userService.getDaysSkiedEachLocation(null);
 
@@ -302,7 +302,7 @@ public class UserServiceTests {
                         tuple("Alice", "Aspen", 5, year),
                         tuple("Bob", "Vail", 3, year)
                 );
-        verify(userRepo, times(1)).getDaysSkiedEachLocation(any(), any());
+        verify(userRepo, times(1)).getDaysSkiedEachLocation();
     }
 
     /**
