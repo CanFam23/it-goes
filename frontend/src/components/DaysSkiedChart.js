@@ -5,73 +5,79 @@ import { Bar } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, BarElement, Title, Tooltip, Legend, Filler );
 
-const DaysSkiedChart = ({ plotData = {trips: [], total: 0}, year = 2025 }) => {
-  // TODO error handling
-  const labels = [];
-  const dataset = [];
-
-  if (plotData.trips.length == 0){
-    return <p className="error-msg">No data to plot</p>
+const DaysSkiedChart = ({ plotData = [], year = 2025 }) => {
+  if (plotData.length === 0) {
+    return <p className="error-msg">No data to plot</p>;
   }
 
-  // Extract first name and days skied
-  plotData.forEach(entry => {
-    labels.push(entry.firstName);
-    dataset.push(entry.daysSkied);
+  // Collect unique locations and unique skiers
+  const locations = [...new Set(plotData.map((d) => d.location))];
+  const skiers = [...new Set(plotData.map((d) => d.firstName))];
+
+  // Build dataset: one dataset per skier
+  const datasets = skiers.map((skier, i) => {
+    // For each location, find daysSkied for this skier
+    const data = locations.map((loc) => {
+      const entry = plotData.find(
+        (d) => d.location === loc && d.firstName === skier
+      );
+      return entry ? entry.daysSkied : 0; // 0 if no data
+    });
+
+    return {
+      label: skier,
+      data,
+      backgroundColor: `hsla(${(i * 60) % 360}, 70%, 50%, 0.7)`,
+      borderColor: `hsla(${(i * 60) % 360}, 70%, 40%, 1)`,
+      borderWidth: 1,
+      barPercentage: 0.9,
+    };
   });
 
-  // Find max val in dataset
-  const maxVal = Math.max(...dataset, 0) + 1;
-
-  // generate colors dynamically so it works for any number of bars
-  const backgroundColors = dataset.map((_, i) =>
-    `hsla(${(i * 50) % 360}, 70%, 50%, 0.8)`
-  );
-
   const data = {
-    labels,
-    datasets: [
-      {
-        // leave label empty so no legend appears
-        label: "",
-        data: dataset,
-        backgroundColor: backgroundColors,
-        borderColor: backgroundColors,
-        borderWidth: 1,
-        barPercentage: 1,
-        borderRadius: 5,
-      },
-    ],
+    labels: locations,
+    datasets,
   };
 
+  // Max val of daysSkied plus some padding for graph
+  const maxVal = Math.max(
+    ...plotData.map((d) => d.daysSkied),
+    0
+  ) + 2;
+
   const options = {
-    maintainAspectRatio: false,
+    indexAxis: "y", // horizontal bars
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false, // hide legend
+        display: true, // legend to distinguish skiers
       },
       title: {
         display: true,
-        text: `Days skied in the ${year}-${year + 1} season`,
+        text: `Resorts & Zones skied during the ${year}-${year + 1} season`,
         font: {
           size: 18,
         },
       },
     },
     scales: {
-      y: {
+      x: {
         title: {
           display: true,
           text: "Days Skied",
         },
         beginAtZero: true,
         max: maxVal,
+        ticks: {
+          stepSize: 1, // only whole numbers
+          precision: 0
+        }
       },
-      x: {
+      y: {
         title: {
           display: true,
-          text: "Skier",
+          text: "Location",
         },
       },
     },

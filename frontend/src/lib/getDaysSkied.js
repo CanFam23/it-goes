@@ -1,6 +1,6 @@
 import {headers} from "next/headers";
 
-export async function getDaysSkied(year){
+export async function getDaysSkied(route,year){
   /**
    * Given a year, calls the getDaysSkied api route to get the number of days each
    * user in the database has skied.
@@ -15,20 +15,20 @@ export async function getDaysSkied(year){
 
     // API route
     const res = await fetch(
-      `${base}/api/getDaysSkied?year=${year}`,
+      `${base}/api/${route}?year=${year}`,
       { cache: 'force-cache' }
     );
 
     if (!res.ok) {
-      console.warn('Error fetching days skied:', res.status, res.statusText);
+      console.warn('Error fetching data from ',route, res.status, res.statusText);
       return { trips: [], total: 0 };
     }
 
     const data = await res.json();
-    console.log(`Successfully retrieved days skied data`);
+    console.log(`Successfully retrieved data from ${route}`);
     return data;
   } catch (err) {
-    console.warn('Failed to fetch days skied:', err);
+    console.warn(`Failed to fetch data from ${route}:`, err);
     return {};
   }
 }

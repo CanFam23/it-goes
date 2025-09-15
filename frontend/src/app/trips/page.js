@@ -22,13 +22,13 @@ export default async function Page({ searchParams }) {
 
   const year = 2024;
 
-  const daysSkied = await getDaysSkied(year);
+  const daysSkiedLocation = await getDaysSkied("getDaysSkiedLocation",year);
 
   return (
     <section className="w-full">
       <Title title="Trips"/>
 
-      <DaysSkiedChart plotData={daysSkied} year={year}/>
+      <DaysSkiedChart plotData={daysSkiedLocation} year={year}/>
 
       <Trips trips={trips}/>
 
