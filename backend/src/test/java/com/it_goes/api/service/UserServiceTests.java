@@ -2,6 +2,7 @@ package com.it_goes.api.service;
 
 import com.it_goes.api.jpa.model.Season;
 import com.it_goes.api.jpa.model.User;
+import com.it_goes.api.jpa.projection.FirstNameDaysLocationYear;
 import com.it_goes.api.jpa.projection.FirstNameDaysYear;
 import com.it_goes.api.jpa.repo.SeasonRepository;
 import com.it_goes.api.jpa.repo.UserRepository;
@@ -29,6 +30,15 @@ public class UserServiceTests {
             @Override public String getFirstName() { return firstName; }
             @Override public int getDaysSkied() { return days; }
             @Override public Integer getYear() { return year; }
+        };
+    }
+
+    private static FirstNameDaysLocationYear fdl(String firstName, String location, int days, int year) {
+        return new FirstNameDaysLocationYear() {
+            public String getFirstName() { return firstName; }
+            public String getLocation() { return location; }
+            public int getDaysSkied() { return days; }
+            public Integer getYear() { return year; }
         };
     }
 
@@ -236,6 +246,107 @@ public class UserServiceTests {
     @Test
     void getDaysSkied_invalidYear_farFuture_throws() {
         assertThatThrownBy(() -> userService.getDaysSkied(9999))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    /**
+     * Happy path: repo returns two projections for different locations; ensure pass through and order are correct.
+     */
+    @Test
+    void getDaysSkiedEachLocation_validYear_returnsList() {
+        final int year = 2024;
+        final Season season = new Season(year);
+        final List<FirstNameDaysLocationYear> mockResult = List.of(
+                fdl("Alice", "Aspen", 5, year),
+                fdl("Bob", "Vail", 3, year)
+        );
+        when(userRepo.getDaysSkiedEachLocation(season.getStartDate(), season.getEndDate()))
+                .thenReturn(mockResult);
+        when(seasonRepo.findByStartYear(year)).thenReturn(Optional.of(season));
+
+        final List<FirstNameDaysLocationYear> result = userService.getDaysSkiedEachLocation(year);
+
+        assertThat(result)
+                .extracting(FirstNameDaysLocationYear::getFirstName,
+                        FirstNameDaysLocationYear::getLocation,
+                        FirstNameDaysLocationYear::getDaysSkied,
+                        FirstNameDaysLocationYear::getYear)
+                .containsExactly(
+                        tuple("Alice", "Aspen", 5, year),
+                        tuple("Bob", "Vail", 3, year)
+                );
+        verify(userRepo, times(1))
+                .getDaysSkiedEachLocation(season.getStartDate(), season.getEndDate());
+    }
+
+    /**
+     * Null year: repo method without date filter should be used.
+     */
+    @Test
+    void getDaysSkiedEachLocation_nullYear_returnsList() {
+        final int year = 2024;
+        final List<FirstNameDaysLocationYear> mockResult = List.of(
+                fdl("Alice", "Aspen", 5, year),
+                fdl("Bob", "Vail", 3, year)
+        );
+        when(userRepo.getDaysSkiedEachLocation(any(), any())).thenReturn(mockResult);
+
+        final List<FirstNameDaysLocationYear> result = userService.getDaysSkiedEachLocation(null);
+
+        assertThat(result)
+                .extracting(FirstNameDaysLocationYear::getFirstName,
+                        FirstNameDaysLocationYear::getLocation,
+                        FirstNameDaysLocationYear::getDaysSkied,
+                        FirstNameDaysLocationYear::getYear)
+                .containsExactly(
+                        tuple("Alice", "Aspen", 5, year),
+                        tuple("Bob", "Vail", 3, year)
+                );
+        verify(userRepo, times(1)).getDaysSkiedEachLocation(any(), any());
+    }
+
+    /**
+     * Repo returns empty list; ensure service returns empty list too.
+     */
+    @Test
+    void getDaysSkiedEachLocation_validYear_noData_returnsEmptyList() {
+        final int year = 2023;
+        final Season season = new Season(year);
+        when(userRepo.getDaysSkiedEachLocation(season.getStartDate(), season.getEndDate()))
+                .thenReturn(List.of());
+        when(seasonRepo.findByStartYear(year)).thenReturn(Optional.of(season));
+
+        final List<FirstNameDaysLocationYear> result = userService.getDaysSkiedEachLocation(year);
+
+        assertThat(result).isEmpty();
+        verify(userRepo, times(1))
+                .getDaysSkiedEachLocation(season.getStartDate(), season.getEndDate());
+    }
+
+    /**
+     * Invalid year (zero or negative) should be rejected by the service.
+     */
+    @Test
+    void getDaysSkiedEachLocation_invalidYear_zero_throws() {
+        assertThatThrownBy(() -> userService.getDaysSkiedEachLocation(0))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    /**
+     * Unreasonably old season start year should be rejected.
+     */
+    @Test
+    void getDaysSkiedEachLocation_invalidYear_tooEarly_throws() {
+        assertThatThrownBy(() -> userService.getDaysSkiedEachLocation(1800))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    /**
+     * Clearly far-future year should be rejected (guard against typos).
+     */
+    @Test
+    void getDaysSkiedEachLocation_invalidYear_farFuture_throws() {
+        assertThatThrownBy(() -> userService.getDaysSkiedEachLocation(9999))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

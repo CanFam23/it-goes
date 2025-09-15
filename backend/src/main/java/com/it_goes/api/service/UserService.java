@@ -1,6 +1,7 @@
 package com.it_goes.api.service;
 
 import com.it_goes.api.jpa.model.User;
+import com.it_goes.api.jpa.projection.FirstNameDaysLocationYear;
 import com.it_goes.api.jpa.projection.FirstNameDaysYear;
 import com.it_goes.api.util.exception.NotFoundException;
 
@@ -63,4 +64,12 @@ public interface UserService {
      * @return List of {@link FirstNameDaysYear} object which contain the first name of the user, the number of days they've skied, and the year.
      */
     List<FirstNameDaysYear> getDaysSkied(Integer year);
+
+    /**
+     * Gets the number of days each user has skied at each location in the season beginning in the given year.
+     * @param year Year the season starts in (ex. 2024-2025 season, you would pass 2024)
+     * @return List of {@link FirstNameDaysLocationYear} object which contain the first name of the user, the number of days they've skied,
+     * the name of each location they've skied at, and the year.
+     */
+    List<FirstNameDaysLocationYear> getDaysSkiedEachLocation(Integer year);
 }
