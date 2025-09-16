@@ -2,7 +2,6 @@ package com.it_goes.api.jpa.model;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.it_goes.api.util.enums.Country;
@@ -16,6 +15,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 
 @Getter
 @EqualsAndHashCode
@@ -46,6 +48,10 @@ public class Location {
     @Column(nullable = false)
     private Country country;
 
+    // M = measure (Use it for time)
+    @Column(columnDefinition = "geometry(LINESTRINGM, 4326)", nullable = false)
+    private Point location;
+
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "location",cascade = CascadeType.ALL)
@@ -75,5 +81,25 @@ public class Location {
         }
 
         return false;
+    }
+
+    public boolean setLocation(Point location) {
+        if (location == null) return false;
+
+        this.location = location;
+
+        return true;
+    }
+
+    public boolean setLocation(double lat, double lon) {
+        try {
+            final GeometryFactory gf = new GeometryFactory();
+
+            this.location = gf.createPoint(new Coordinate(lat, lon));
+        }catch (Exception e) {
+            return false;
+        }
+
+        return true;
     }
 }

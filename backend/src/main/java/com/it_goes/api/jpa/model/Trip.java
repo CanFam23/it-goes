@@ -2,7 +2,6 @@ package com.it_goes.api.jpa.model;
 
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,6 +24,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.locationtech.jts.geom.LineString;
 
 @Getter
 @EqualsAndHashCode
@@ -68,9 +68,8 @@ public class Trip {
     private LocalDate dateUpdated;
 
     @Setter
-    @Lob  // Store as binary large object (BLOB)
     @Column(nullable = true)
-    private byte[] gpxContent;
+    private LineString route;
 
     // Bidirectional
     @Setter
