@@ -83,6 +83,12 @@ public class Location {
         return false;
     }
 
+    /**
+     * Sets the location (Lat / Long) coordinates of the location
+     * @param location {@link org.locationtech.jts.geom.Point} object, containing the lat / long of the location
+     * @return {@code true} if the location was successfully added, {@code false} if not.
+     * Setting the location returns {@code false} the given {@link org.locationtech.jts.geom.Point} object is null.
+     */
     public boolean setLocation(Point location) {
         if (location == null) return false;
 
@@ -91,6 +97,14 @@ public class Location {
         return true;
     }
 
+    /**
+     * Sets the location (Lat / Long) coordinates of the location
+     * @param lat Latitude of location
+     * @param lon Longitude of location
+     * @return {@code true} if the location was successfully added, {@code false} if not.
+     * Setting the location returns {@code false} if converting the given {@code lat} and {@code long}
+     * to a {@link org.locationtech.jts.geom.Point} object fails.
+     */
     public boolean setLocation(double lat, double lon) {
         try {
             final GeometryFactory gf = new GeometryFactory();

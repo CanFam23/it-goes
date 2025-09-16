@@ -33,7 +33,11 @@ public class DataSeeder {
 
         final Location location = new Location("Beehive Basin", State.MT, Country.US);
 
+        location.setLocation(45.355648984592534,-111.39572786673328);
+
         final Location location2 = new Location("Glacier National Park", State.MT, Country.US);
+
+        location2.setLocation(48.617557525634766,-113.7603988647461);
 
         final Season season = new Season(2024);
 
