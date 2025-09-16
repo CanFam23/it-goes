@@ -18,6 +18,7 @@ import lombok.*;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 
 @Getter
 @EqualsAndHashCode
@@ -48,8 +49,7 @@ public class Location {
     @Column(nullable = false)
     private Country country;
 
-    // M = measure (Use it for time)
-    @Column(columnDefinition = "geometry(LINESTRINGM, 4326)", nullable = false)
+    @Column(columnDefinition = "geometry(Point,4326)")
     private Point location;
 
     @ToString.Exclude
@@ -107,9 +107,10 @@ public class Location {
      */
     public boolean setLocation(double lat, double lon) {
         try {
-            final GeometryFactory gf = new GeometryFactory();
+            final GeometryFactory gf = new GeometryFactory(new PrecisionModel(), 4326);
 
-            this.location = gf.createPoint(new Coordinate(lat, lon));
+            this.location = gf.createPoint(new Coordinate(lon, lat));
+            this.location.setSRID(4326);
         }catch (Exception e) {
             return false;
         }

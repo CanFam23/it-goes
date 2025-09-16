@@ -32,7 +32,7 @@ public interface TripService {
                 trip.getDescription(), trip.getLocation().getName(),
                 trip.getLocation().getState().getName(), trip.getDateOfTrip(),
                 trip.getDatePosted(), trip.getDateUpdated(),
-                trip.getGpxContent(), trip.getAuthor().getUsername(),
+                trip.getRoute(), trip.getAuthor().getUsername(),
                 trip.getUsers().stream().map(User::getUsername).toArray(String[]::new));
     }
 
