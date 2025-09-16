@@ -40,6 +40,18 @@ export default async function Home() {
       <Trips
        trips={trips}
       />
+      <div className="flex w-full items-center justify-center">
+        <Link
+          href="/trips"
+          className="text-text-btn text-2xl
+          bg-bg-btn font-bold border-border-btn
+          border-2 rounded-lg p-1 my-5
+          transform transition-transform duration-200
+          hover:scale-105 hover:bg-gray-100"
+        >
+          View All Trips
+        </Link>
+      </div>
     </section>
   );
 }
