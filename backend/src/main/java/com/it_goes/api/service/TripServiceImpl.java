@@ -1,5 +1,8 @@
 package com.it_goes.api.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.it_goes.api.dto.TripDto;
 import com.it_goes.api.dto.TripSummaryDto;
 import com.it_goes.api.jpa.model.Trip;
@@ -45,8 +48,22 @@ public class TripServiceImpl implements TripService{
             throw new NotFoundException("Trip with ID #" + tripId + " found");
         }
 
-        logger.info("getTrip: Trip with ID {} found", tripId);
-        return TripService.toTripDto(tripFound);
+        // If we use the store route column in the trip table, a linestring is returned
+        // but each point only contains a x and y coordinate
+        // so, this fetches the route so the z and m (time) measurements are included.
+        final String route = tripRepo.getTripRoute(tripId).orElse("");
+        final ObjectMapper mapper = new ObjectMapper();
+
+        // Try to parse the string route into a json node.
+        try {
+            final JsonNode routeJson = mapper.readTree(route);
+
+            logger.info("getTrip: Trip with ID {} found", tripId);
+            return TripService.toTripDto(tripFound, routeJson);
+        } catch (JsonProcessingException e) {
+            logger.warn("getTrip: Error reading");
+            throw new RuntimeException(e); //TODO: Change? Probably should handle error instead of throwing a runtime ex
+        }
     }
 
     /**
