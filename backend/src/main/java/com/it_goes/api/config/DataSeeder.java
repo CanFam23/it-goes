@@ -2,14 +2,19 @@ package com.it_goes.api.config;
 
 import com.it_goes.api.jpa.model.*;
 import com.it_goes.api.jpa.repo.*;
+import com.it_goes.api.service.TripService;
 import com.it_goes.api.util.enums.Country;
 import com.it_goes.api.util.enums.Social;
 import com.it_goes.api.util.enums.State;
+import org.locationtech.jts.geom.LineString;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Date;
 
@@ -43,6 +48,14 @@ public class DataSeeder {
 
         final Season season2 = new Season(2023);
 
+        final Path path;
+        try {
+            path = new ClassPathResource("tracks/4th_july.gpx").getFile().toPath();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        final LineString routeData = TripService.toLineString(path);
+
         sr.save(season);
         sr.save(season2);
 
@@ -59,7 +72,7 @@ public class DataSeeder {
         for(int i = 0; i < 8; i++){
             Trip t = new Trip("4th of July Couloir " + i, newUser, i % 2 == 0 ? location : location2, LocalDate.of(2025,6,i + 1));
             t.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-
+            t.setRoute(routeData);
             season.addTrip(t);
             t.setSeason(season);
             t.setCoverImageKey("images/DSC02993.jpg");
@@ -72,7 +85,7 @@ public class DataSeeder {
 
             t = new Trip("4th of July Couloir " + i, newUser, i % 2 == 0 ? location : location2, LocalDate.of(2024,6,i + 1));
             t.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
-
+            t.setRoute(routeData);
             season2.addTrip(t);
             t.setSeason(season2);
             t.setCoverImageKey("images/DSC02993.jpg");
