@@ -1,5 +1,6 @@
 package com.it_goes.api.controller;
 
+import com.it_goes.api.dto.TripDto;
 import com.it_goes.api.dto.TripSummaryDto;
 import com.it_goes.api.service.TripService;
 import org.springframework.data.domain.Page;
@@ -43,4 +44,16 @@ public class TripController {
 
         return ResponseEntity.ok(tripData);
     }
+
+    @GetMapping("getTrip")
+    public ResponseEntity<TripDto> getTrip(
+        @RequestParam(name="id") long id
+    ){
+        final TripDto trip = tripService.getTrip(id);
+
+        logger.info("getTrip: Found trip with (id: {})", id);
+
+        return ResponseEntity.ok(trip);
+    }
+
 }
