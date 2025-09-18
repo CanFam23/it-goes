@@ -1,5 +1,6 @@
 package com.it_goes.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.it_goes.api.dto.TripDto;
 import com.it_goes.api.dto.TripSummaryDto;
 import com.it_goes.api.jpa.model.Trip;
@@ -35,14 +36,15 @@ public interface TripService {
     /**
      * Given a {@link Trip} object, converts it to a {@link TripDto}.
      * @param trip Trip object to convert.
+     * @param route {@link JsonNode} with the route data for the given trip.
      * @return A new Trip Dto object.
      */
-    static TripDto toTripDto(Trip trip) {
+    static TripDto toTripDto(Trip trip, JsonNode route) {
         return new TripDto(trip.getId(), trip.getTitle(),
                 trip.getDescription(), trip.getLocation().getName(),
                 trip.getLocation().getState().getName(), trip.getDateOfTrip(),
                 trip.getDatePosted(), trip.getDateUpdated(),
-                trip.getRoute(), trip.getAuthor().getUsername(),
+                route, trip.getAuthor().getUsername(),
                 trip.getUsers().stream().map(User::getUsername).toArray(String[]::new));
     }
 
