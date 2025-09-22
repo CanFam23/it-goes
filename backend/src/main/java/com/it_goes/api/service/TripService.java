@@ -7,6 +7,7 @@ import com.it_goes.api.jpa.model.Trip;
 import com.it_goes.api.jpa.model.User;
 import com.it_goes.api.util.exception.NotFoundException;
 import io.jenetics.jpx.GPX;
+import io.jenetics.jpx.Length;
 import io.jenetics.jpx.Track;
 import io.jenetics.jpx.TrackSegment;
 import org.locationtech.jts.geom.*;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Page;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.NoSuchElementException;
 
 public interface TripService {
@@ -55,7 +57,7 @@ public interface TripService {
      */
     static LineString toLineString(Path p){
         // Only convert gpx files to lineString
-        if (!p.getFileName().toString().endsWith(".gpx")){
+        if (p == null || !p.getFileName().toString().endsWith(".gpx")){
             return null;
         }
 
@@ -74,8 +76,8 @@ public interface TripService {
                         return new CoordinateXYZM(
                                 point.getLongitude().doubleValue(),   // X
                                 point.getLatitude().doubleValue(),    // Y
-                                point.getElevation().get().doubleValue(), // Z
-                                point.getTime().get().getEpochSecond()); // M / Time
+                                point.getElevation().map(Length::doubleValue).orElse(0.0), // Z
+                                point.getTime().map(Instant::getEpochSecond).orElse(0L)); // M / Time
                     })
                     .toArray(Coordinate[]::new);
 
