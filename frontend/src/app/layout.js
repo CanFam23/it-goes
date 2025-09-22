@@ -11,6 +11,7 @@ export const metadata = {
 const links = {
   "About":"/about",
   "Trips":"/trips",
+  "Map":"/map",
   "Gallery":"/gallery",
   "Log in":"/login"
 }
