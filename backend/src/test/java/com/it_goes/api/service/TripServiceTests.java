@@ -43,7 +43,7 @@ public class TripServiceTests {
     }
 
     @Test
-    void getTrip_userFound_returnsDto(){
+    void getTrip_tripFound_returnsDto(){
         final Trip t = new Trip("title",user,location, LocalDate.of(2025,1,1));
 
         when(tripRepo.findById(1L)).thenReturn(Optional.of(t));
@@ -55,7 +55,7 @@ public class TripServiceTests {
     }
 
     @Test
-    void getTrip_noUserFound_throwsException(){
+    void getTrip_tripFound_throwsException(){
         when(tripRepo.findById(2L)).thenReturn(Optional.empty());
 
         // Verify exception thrown when trip with given id isn't found
@@ -64,7 +64,7 @@ public class TripServiceTests {
     }
 
     @Test
-    void getTrip_nullUser_throwsException(){
+    void getTrip_nullId_throwsException(){
         // Verify exception thrown when null is given
         assertThatThrownBy(() -> tripService.getTrip(null)).isInstanceOf(IllegalArgumentException.class);
         verify(tripRepo, never()).findById(1L);
