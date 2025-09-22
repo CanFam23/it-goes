@@ -10,11 +10,17 @@ import com.it_goes.api.util.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +28,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class TripServiceTests {
@@ -145,5 +152,72 @@ public class TripServiceTests {
                 .thenReturn(Page.empty());
         assertThatThrownBy(() -> tripService.getTripSummaries(3,1)).isInstanceOf(NotFoundException.class);
         verify(tripRepo, times(1)).findAllByOrderByDateOfTripDesc(any(Pageable.class));
+    }
+
+    // toLineString tests
+
+    @Test
+    void toLineString_validPath(){
+        ClassPathResource resource = new ClassPathResource("tracks/test_route.gpx");
+
+        // Works in test scope (resources on disk)
+        Path path = null;
+        try {
+            path = resource.getFile().toPath();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        final LineString ls = TripService.toLineString(path);
+
+        assertNotNull(ls, "LineString returned should not be null after a valid gpx file with gpx tracks is given!");
+
+        final Coordinate[] coords = ls.getCoordinates();
+
+        // Ensure valid measurements
+        for (Coordinate c: coords){
+            assertTrue(c.isValid()); // isValid checks if there is finite x and y values
+
+            assertNotEquals(c.getY(), 0);
+
+            assertNotEquals(c.getM(), 0);
+        }
+    }
+
+    @Test
+    void toLineString_invalidPath_returnsNull(){
+        Path testFile;
+        try {
+            testFile = Files.createTempFile("test_gpx",".gpx");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        final LineString ls = TripService.toLineString(testFile);
+
+        assertNull(ls, "toLineString should return null if the given file is not found");
+    }
+
+    @Test
+    void toLineString_notGpxFile_returnsNull(){
+        Path testFile;
+        try {
+            testFile = Files.createTempFile("test_gpx",".pdf");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        final LineString ls = TripService.toLineString(testFile);
+
+        assertNull(ls, "toLineString should return null if the given file is not a gpx file");
+    }
+
+    @Test
+    void toLineString_nullFile_returnsNull(){
+        final Path testFile = null;
+
+        final LineString ls = TripService.toLineString(testFile);
+
+        assertNull(ls, "toLineString should return null if the given file is not a gpx file");
     }
 }
