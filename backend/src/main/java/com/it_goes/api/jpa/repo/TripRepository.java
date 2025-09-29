@@ -1,6 +1,7 @@
 package com.it_goes.api.jpa.repo;
 
 import com.it_goes.api.jpa.model.Trip;
+import com.it_goes.api.jpa.projection.GeoJsonDistanceElevation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -77,10 +78,12 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
                     ]
                     ORDER BY pt.path
                 )
-            ) AS geojson
+            ) AS geojson,
+            (ST_ZMax(trip.route)-ST_ZMin(trip.route)) * 3.280839895 AS elevation_ft,
+            ST_Length(trip.route::geography) * 0.0006213712 AS length_mi
             FROM trip
             CROSS JOIN LATERAL ST_DumpPoints(route) AS pt
             GROUP BY trip.id;
             """, nativeQuery = true)
-    Set<String> getAllTripRoutes();
+    Set<GeoJsonDistanceElevation> getAllTripRoutes();
 }
