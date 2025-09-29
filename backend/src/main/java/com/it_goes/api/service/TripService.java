@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 public interface TripService {
     int MIN_NUM_TRIPS = 1;
@@ -104,4 +105,45 @@ public interface TripService {
      * @return Page object containing the trip summary dtos.
      */
     Page<TripSummaryDto> getTripSummaries(int pageSize, int pageNum);
+
+    /**
+     * Gets the trip features and route data for all trips in the database. The data is returned in geoJSON format
+     * so it's ready to be displayed with a plotting library.
+     * <p>The features include:</p>
+     * <ul>
+     *     <li>id</li>
+     *     <li>Name of the trip</li>
+     *     <li>Location (Location name, city, state)</li>
+     *     <li>Date of trip</li>
+     *     <li>Duration of trip (Hours / minutes) </li>
+     *     <li>Total vertical feet of the trip</li>
+     *     <li>Total distance travelled (miles) </li>
+     * </ul>
+     * The geoJson returned will look like:
+     * <pre>
+     *     {@code
+     *     {
+     *         "type": "FeatureCollection"
+     *         "features: [
+     *              {
+     *                  "type":"Feature",
+     *                  "properties":{
+     *                      // properties mentioned above...
+     *                  },
+     *                  "geometry":{
+     *                      "type":"LineString",
+     *                      "coordinates":[
+     *                          [lat_a, long_a, z_a, m_a],
+     *                          [lat_b, long_b, z_b, m_b],
+     *                          ...
+     *                      ]
+     *                  }
+     *              }
+     *         ]
+     *     }
+     *     }
+     * </pre>
+     * @return A JsonNode of geoJson data, which is defined as a "FeatureCollection"
+     */
+    JsonNode getAllTripFeatureRoutes();
 }
