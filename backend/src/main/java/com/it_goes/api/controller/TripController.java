@@ -1,5 +1,6 @@
 package com.it_goes.api.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.it_goes.api.dto.TripDto;
 import com.it_goes.api.dto.TripSummaryDto;
 import com.it_goes.api.service.TripService;
@@ -54,6 +55,13 @@ public class TripController {
         logger.info("getTrip: Found trip with (id: {})", id);
 
         return ResponseEntity.ok(trip);
+    }
+
+    @GetMapping("getAllTripFeatureRoutes")
+    public ResponseEntity<JsonNode> getAllTripRoutesFeatures(){
+        logger.info("getAllTripRoutesFeatures: Getting all trip routes and features");
+
+        return ResponseEntity.ok(tripService.getAllTripFeatureRoutes());
     }
 
 }
