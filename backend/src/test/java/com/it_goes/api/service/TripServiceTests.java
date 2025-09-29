@@ -47,6 +47,7 @@ public class TripServiceTests {
         user = new User("test","test@test.com","hash",
                 "john","doe",new Image("key","name"));
         location = new Location("test mtn", State.MT, Country.US);
+        location.setLocation(67, 67);
     }
 
     @Test
