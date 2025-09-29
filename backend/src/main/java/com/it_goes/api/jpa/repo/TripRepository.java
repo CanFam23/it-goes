@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import java.util.Set;
 
 public interface TripRepository extends JpaRepository<Trip, Long> {
     Page<Trip> findAllByOrderByDateOfTripDesc(Pageable pageable);
@@ -34,7 +35,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
      */
     @Query(value = """
             SELECT json_build_object(
-            	'id',id,
+                'id', trip.id,
                 'type', 'LineString',
                 'coordinates', json_agg(
                     ARRAY[
@@ -48,8 +49,38 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
             ) AS geojson
             FROM trip
             CROSS JOIN LATERAL ST_DumpPoints(route) AS pt
-            WHERE id = 1
+            WHERE id = :tripId
             GROUP BY trip.id;
             """, nativeQuery = true)
     Optional<String> getTripRoute(@Param("tripId") long tripId);
+
+    /**
+     * Gets the route data for all trips in the database, and returns a set of strings of geojson data where each string
+     * is the data for one trip.
+     * <ul>
+     *     <li>id: id of trip</li>
+     *     <li>type: type of geometry (Will always be LineString in this case)</li>
+     *     <li>coordinates: The coordinates of the linestring, in order of point ascending</li>
+     * </ul>
+     * @return A set of strings of json data with the keys and values mentioned above.
+     */
+    @Query(value = """
+            SELECT json_build_object(
+                'id', trip.id,
+                'type', 'LineString',
+                'coordinates', json_agg(
+                    ARRAY[
+                        ST_X(pt.geom),       -- X
+                        ST_Y(pt.geom),       -- Y
+                        ST_Z(pt.geom),       -- Z (elevation), NULL if absent
+                        ST_M(pt.geom)        -- M (measure), NULL if absent
+                    ]
+                    ORDER BY pt.path
+                )
+            ) AS geojson
+            FROM trip
+            CROSS JOIN LATERAL ST_DumpPoints(route) AS pt
+            GROUP BY trip.id;
+            """, nativeQuery = true)
+    Set<String> getAllTripRoutes();
 }
