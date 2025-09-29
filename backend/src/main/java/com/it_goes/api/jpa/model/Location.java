@@ -117,4 +117,8 @@ public class Location {
 
         return true;
     }
+
+    public String toString(){
+        return this.name + " " + this.state.toString();
+    }
 }
