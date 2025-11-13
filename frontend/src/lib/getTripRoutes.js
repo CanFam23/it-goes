@@ -11,7 +11,7 @@ export async function getTripRoutes(){
 
     // API route
     const res = await fetch(
-      `${base}/api/getTrip?id=1`,
+      `${base}/api/getAllTripFeatureRoutes`,
     );
 
     if (!res.ok) {
