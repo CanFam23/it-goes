@@ -7,14 +7,14 @@ import mapboxgl from "mapbox-gl";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
-export default function Map({location, route}) {
+export default function Map({routeData}) {
   const mapContainerRef = useRef();
   const mapRef = useRef();
 
   useEffect(() => {
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/standard',
+      style: 'mapbox://styles/mapbox/standard-satellite',
       config: {
         basemap: {
           showPedestrianRoads: false,
@@ -31,20 +31,26 @@ export default function Map({location, route}) {
       pitch: 0.00,
     });
 
+    mapRef.current.addControl(new mapboxgl.NavigationControl());
+    mapRef.current.addControl(new mapboxgl.GeolocateControl());
+    mapRef.current.addControl(new mapboxgl.ScaleControl({unit: "imperial"}));
+
+    mapRef.current.addControl(new mapboxgl.FullscreenControl(), "bottom-right");
+
     mapRef.current.on('load', () => {
-      mapRef.current.addSource('point', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [location[0],location[1]]
-          },
-          properties: {
-            "name":"Beehive Basin"
-          }
-        }
-      });
+      // mapRef.current.addSource('point', {
+      //   type: 'geojson',
+      //   data: {
+      //     type: 'Feature',
+      //     geometry: {
+      //       type: 'Point',
+      //       coordinates: [location[0],location[1]]
+      //     },
+      //     properties: {
+      //       "name":"Beehive Basin"
+      //     }
+      //   }
+      // });
 
       mapRef.current.addSource('mapbox-dem', {
         'type': 'raster-dem',
@@ -55,17 +61,17 @@ export default function Map({location, route}) {
 
       mapRef.current.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
 
-      mapRef.current.addLayer({
-        id: 'point-layer',
-        type: 'circle',
-        source: 'point',
-        paint: {
-          'circle-radius': 4,
-          'circle-stroke-width': 2,
-          'circle-color': 'red',
-          'circle-stroke-color': 'white'
-        }
-      });
+      // mapRef.current.addLayer({
+      //   id: 'point-layer',
+      //   type: 'circle',
+      //   source: 'point',
+      //   paint: {
+      //     'circle-radius': 4,
+      //     'circle-stroke-width': 2,
+      //     'circle-color': 'red',
+      //     'circle-stroke-color': 'white'
+      //   }
+      // });
 
       mapRef.current.addSource('route',{
         type:'geojson',
@@ -98,7 +104,7 @@ export default function Map({location, route}) {
   return (
     <div
       ref={mapContainerRef}
-      className="map-container w-full h-[400px]"
+      className="map-container w-full h-[600px]"
     />
   );
 }
