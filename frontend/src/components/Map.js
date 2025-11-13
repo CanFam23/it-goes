@@ -18,11 +18,11 @@ export default function Map({routeData}) {
       config: {
         basemap: {
           showPedestrianRoads: false,
-          showPointOfInterestLabels: false,
+          showPointOfInterestLabels: true,
           showTransitLabels: false,
           showAdminBoundaries: false,
           font: "Inter",
-          showLandmarkIconLabels: false
+          showLandmarkIconLabels: true
         }
       },
       center: [-111.395, 45.35],
@@ -38,19 +38,6 @@ export default function Map({routeData}) {
     mapRef.current.addControl(new mapboxgl.FullscreenControl(), "bottom-right");
 
     mapRef.current.on('load', () => {
-      // mapRef.current.addSource('point', {
-      //   type: 'geojson',
-      //   data: {
-      //     type: 'Feature',
-      //     geometry: {
-      //       type: 'Point',
-      //       coordinates: [location[0],location[1]]
-      //     },
-      //     properties: {
-      //       "name":"Beehive Basin"
-      //     }
-      //   }
-      // });
 
       mapRef.current.addSource('mapbox-dem', {
         'type': 'raster-dem',
@@ -61,41 +48,65 @@ export default function Map({routeData}) {
 
       mapRef.current.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
 
-      // mapRef.current.addLayer({
-      //   id: 'point-layer',
-      //   type: 'circle',
-      //   source: 'point',
-      //   paint: {
-      //     'circle-radius': 4,
-      //     'circle-stroke-width': 2,
-      //     'circle-color': 'red',
-      //     'circle-stroke-color': 'white'
-      //   }
-      // });
-
-      mapRef.current.addSource('route',{
-        type:'geojson',
-        data: {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: route.coordinates
-          },
-          properties: {
-            id: route.id,
-          }
-        }
+      // Add route data source
+      mapRef.current.addSource('routes',{
+        type: 'geojson',
+        generateId: true,
+        data:routeData
       });
 
+      // Add layer with route data
       mapRef.current.addLayer({
-        id: 'route',
+        id: 'routes',
         type: 'line',
-        source: 'route',
+        source: 'routes',
         paint: {
           'line-color': "#ff0000",
           'line-width': 2,
         }
       });
+    });
+
+    // Add interaction to display route info on click 
+    mapRef.current.addInteraction('routes-click-interaction', {
+      type: 'click',
+      target: { layerId: 'routes' },
+      handler: (e) => {
+        const description = `
+        <strong class="w-full place-self-center self-center">${e.feature.properties.title}</strong>
+        <hr>
+        <div class="flex">
+          <p class="pr-2">${e.feature.properties.locationName}</p>
+          <p class="pl-2 bg-background">${e.feature.properties.date}</p>
+        </div>
+        <p>${e.feature.properties.distance.toFixed(2)} miles</p>
+        <p>${e.feature.properties.elevation.toFixed(2)} ft elevation gain</p>
+        <a href="" class="hover:underline"><strong>View Post</strong></a>
+        `;
+
+        new mapboxgl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(description)
+          .addTo(mapRef.current);
+      }
+    });
+
+    // Change the cursor to a pointer when the mouse is over a POI.
+    mapRef.current.addInteraction('routes-mouseenter-interaction', {
+      type: 'mouseenter',
+      target: { layerId: 'routes' },
+      handler: () => {
+        mapRef.current.getCanvas().style.cursor = 'pointer';
+      }
+    });
+
+    // Change the cursor back to a pointer when it stops hovering over a POI.
+    mapRef.current.addInteraction('routes-mouseleave-interaction', {
+      type: 'mouseleave',
+      target: { layerId: 'routes' },
+      handler: () => {
+        mapRef.current.getCanvas().style.cursor = '';
+      }
     });
 
     return () => mapRef.current.remove();
