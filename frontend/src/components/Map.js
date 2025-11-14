@@ -6,6 +6,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from "mapbox-gl";
 
 import DimensionControl from "@/mapbox/DimensionControl";
+import StyleControl from "@/mapbox/StyleControl";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -16,7 +17,7 @@ export default function Map({routeData}) {
   useEffect(() => {
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/standard-satellite',
+      style: 'mapbox://styles/mapbox/outdoors-v12',
       config: {
         basemap: {
           showPedestrianRoads: false,
@@ -41,6 +42,7 @@ export default function Map({routeData}) {
     mapRef.current.addControl(new mapboxgl.FullscreenControl(), "bottom-right");
 
     mapRef.current.addControl(new DimensionControl());
+    mapRef.current.addControl(new StyleControl(), "top-left");
 
     const deltaDistance = 100;
     const deltaDegrees = 25;
@@ -51,6 +53,18 @@ export default function Map({routeData}) {
     }
 
     mapRef.current.on('load', () => {
+
+      // Satellite layer, starts off hidden
+      mapRef.current.addLayer({
+        id: 'satellite-base',
+        type: 'raster',
+        source: {
+          type: 'raster',
+          url: 'mapbox://mapbox.satellite',
+          tileSize: 256,
+        },
+        layout: { visibility: 'none' },
+      });
 
       mapRef.current.getCanvas().focus();
       mapRef.current
@@ -103,7 +117,7 @@ export default function Map({routeData}) {
         'maxzoom': 14
       });
 
-      // Add 3D topography
+      // Set 3D topography
       mapRef.current.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
 
       // Add route data source
