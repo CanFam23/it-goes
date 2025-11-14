@@ -57,10 +57,10 @@ export default function Map({routeData}) {
         .getCanvas()
         .parentNode.classList.remove('mapboxgl-interactive');
 
+      // Add keyboard controls for the map
       mapRef.current.getCanvas().addEventListener(
         'keydown',
         (e) => {
-          console.log(e.which);
           e.preventDefault();
           if (e.which === 38) {
             mapRef.current.panBy([0, -deltaDistance], {
@@ -80,12 +80,12 @@ export default function Map({routeData}) {
               bearing: mapRef.current.getBearing() + deltaDegrees,
               easing: easing
             });
-          } else if (e.which === 90) {
+          } else if (e.which === 90) { // z key
             mapRef.current.easeTo({
               zoom: mapRef.current.getZoom() + deltaZoom,
               easing: easing
             });
-          } else if (e.which === 88) {
+          } else if (e.which === 88) { // x key
             mapRef.current.easeTo({
               zoom: mapRef.current.getZoom() - deltaZoom,
               easing: easing
@@ -95,6 +95,7 @@ export default function Map({routeData}) {
         true
       );
 
+      // Add 3D topography
       mapRef.current.addSource('mapbox-dem', {
         'type': 'raster-dem',
         'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
@@ -102,6 +103,7 @@ export default function Map({routeData}) {
         'maxzoom': 14
       });
 
+      // Add 3D topography
       mapRef.current.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
 
       // Add route data source
@@ -129,6 +131,7 @@ export default function Map({routeData}) {
       target: { layerId: 'routes' },
       handler: (e) => {
         const description = `
+        <div class="w-full h-full bg-background">
         <strong class="w-full place-self-center self-center">${e.feature.properties.title}</strong>
         <hr>
         <div class="flex">
@@ -138,6 +141,7 @@ export default function Map({routeData}) {
         <p>${e.feature.properties.distance.toFixed(2)} miles</p>
         <p>${e.feature.properties.elevation.toFixed(2)} ft elevation gain</p>
         <a href="" class="hover:underline"><strong>View Post</strong></a>
+        </div>
         `;
 
         new mapboxgl.Popup()
