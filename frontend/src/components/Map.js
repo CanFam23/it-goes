@@ -47,6 +47,7 @@ export default function Map({routeData}) {
     const deltaDistance = 100;
     const deltaDegrees = 25;
     const deltaZoom = 0.5;
+    const deltaPitch = 10;
 
     function easing(t) {
       return t * (2 - t);
@@ -75,6 +76,7 @@ export default function Map({routeData}) {
       mapRef.current.getCanvas().addEventListener(
         'keydown',
         (e) => {
+          console.log(e.which);
           e.preventDefault();
           if (e.which === 38) {
             mapRef.current.panBy([0, -deltaDistance], {
@@ -102,6 +104,16 @@ export default function Map({routeData}) {
           } else if (e.which === 88) { // x key
             mapRef.current.easeTo({
               zoom: mapRef.current.getZoom() - deltaZoom,
+              easing: easing
+            });
+          }else if (e.which === 65) { // a key
+            mapRef.current.easeTo({
+              pitch: mapRef.current.getPitch() + deltaPitch,
+              easing: easing
+            });
+          } else if (e.which === 83) { // s key
+            mapRef.current.easeTo({
+              pitch: mapRef.current.getPitch() - deltaPitch,
               easing: easing
             });
           }
