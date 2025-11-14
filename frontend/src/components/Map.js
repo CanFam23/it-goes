@@ -76,7 +76,6 @@ export default function Map({routeData}) {
       mapRef.current.getCanvas().addEventListener(
         'keydown',
         (e) => {
-          console.log(e.which);
           e.preventDefault();
           if (e.which === 38) {
             mapRef.current.panBy([0, -deltaDistance], {
@@ -148,6 +147,24 @@ export default function Map({routeData}) {
           'line-color': "#ff0000",
           'line-width': 2,
         }
+      });
+
+      routeData.features.forEach(feature => {
+        if (!feature.geometry.coordinates || feature.geometry.coordinates.length === 0) {
+          return;
+        }
+
+        const marker = new mapboxgl.Marker()
+          .setLngLat(feature.geometry.coordinates[0].slice(0,2))
+          .addTo(mapRef.current);
+
+        marker.getElement().addEventListener('click', () => {
+          mapRef.current.flyTo({
+            center: feature.geometry.coordinates[0].slice(0,2),
+            zoom: 12,
+            essential: true
+          });
+        });
       });
     });
 
