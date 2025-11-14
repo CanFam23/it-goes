@@ -5,6 +5,8 @@ import React, { useEffect, useRef } from 'react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from "mapbox-gl";
 
+import DimensionControl from "@/mapbox/DimensionControl";
+
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 export default function Map({routeData}) {
@@ -29,6 +31,7 @@ export default function Map({routeData}) {
       zoom: 11.12,
       bearing: 0.00,
       pitch: 0.00,
+      keyboard: false,
     });
 
     mapRef.current.addControl(new mapboxgl.NavigationControl());
@@ -37,7 +40,58 @@ export default function Map({routeData}) {
 
     mapRef.current.addControl(new mapboxgl.FullscreenControl(), "bottom-right");
 
+    const deltaDistance = 100;
+    const deltaDegrees = 25;
+    const deltaZoom = 0.5;
+
+    function easing(t) {
+      return t * (2 - t);
+    }
+
     mapRef.current.on('load', () => {
+
+      mapRef.current.getCanvas().focus();
+      mapRef.current
+        .getCanvas()
+        .parentNode.classList.remove('mapboxgl-interactive');
+
+      mapRef.current.getCanvas().addEventListener(
+        'keydown',
+        (e) => {
+          console.log(e.which);
+          e.preventDefault();
+          if (e.which === 38) {
+            mapRef.current.panBy([0, -deltaDistance], {
+              easing: easing
+            });
+          } else if (e.which === 40) {
+            mapRef.current.panBy([0, deltaDistance], {
+              easing: easing
+            });
+          } else if (e.which === 37) {
+            mapRef.current.easeTo({
+              bearing: mapRef.current.getBearing() - deltaDegrees,
+              easing: easing
+            });
+          } else if (e.which === 39) {
+            mapRef.current.easeTo({
+              bearing: mapRef.current.getBearing() + deltaDegrees,
+              easing: easing
+            });
+          } else if (e.which === 90) {
+            mapRef.current.easeTo({
+              zoom: mapRef.current.getZoom() + deltaZoom,
+              easing: easing
+            });
+          } else if (e.which === 88) {
+            mapRef.current.easeTo({
+              zoom: mapRef.current.getZoom() - deltaZoom,
+              easing: easing
+            });
+          }
+        },
+        true
+      );
 
       mapRef.current.addSource('mapbox-dem', {
         'type': 'raster-dem',
@@ -67,7 +121,7 @@ export default function Map({routeData}) {
       });
     });
 
-    // Add interaction to display route info on click 
+    // Add interaction to display route info on click
     mapRef.current.addInteraction('routes-click-interaction', {
       type: 'click',
       target: { layerId: 'routes' },
