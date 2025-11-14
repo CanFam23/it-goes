@@ -7,6 +7,16 @@ import DaysSkiedChart from "@/components/DaysSkiedChart";
 import {getDaysSkied} from "@/lib/getDaysSkied";
 import DaysSkiedTotal from "@/components/DaysSkiedTotal";
 
+import Head from "next/head";
+import {metadata} from "@/app/layout";
+
+export function generateMetadata({ searchParams }) {
+  return {
+    title: "Recent Trips",
+    description: metadata.description,
+  };
+}
+
 export default async function Page({ searchParams }) {
   const searchParam = await searchParams;
   console.log("Trip Page: searchParams:", JSON.stringify(searchParam, null, 2));
