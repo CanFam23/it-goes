@@ -40,6 +40,8 @@ export default function Map({routeData}) {
 
     mapRef.current.addControl(new mapboxgl.FullscreenControl(), "bottom-right");
 
+    mapRef.current.addControl(new DimensionControl());
+
     const deltaDistance = 100;
     const deltaDegrees = 25;
     const deltaZoom = 0.5;
