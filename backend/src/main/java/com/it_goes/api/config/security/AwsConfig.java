@@ -1,4 +1,4 @@
-package com.it_goes.api.config;
+package com.it_goes.api.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -11,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -23,15 +24,15 @@ public class DataSeeder {
 
     @Bean
     CommandLineRunner seed(TripRepository tr, LocationRepository lr, UserRepository ur, SeasonRepository sr,
-                               SocialLinkRepository slr, ImageRepository ir) {
-        return args -> seedData(tr, lr, ur, sr, slr, ir);
+                               SocialLinkRepository slr, ImageRepository ir, PasswordEncoder pe) {
+        return args -> seedData(tr, lr, ur, sr, slr, ir, pe);
     }
 
     @Transactional
     void seedData(TripRepository tr, LocationRepository lr, UserRepository ur, SeasonRepository sr,
-                  SocialLinkRepository slr, ImageRepository ir){
+                  SocialLinkRepository slr, ImageRepository ir, PasswordEncoder pe){
         final Image profileImg = new Image("images/DSC02232.JPG","nclouse-pi") ;
-        final User newUser = new User("nclouse","nickclouse03@gmail.com", "password","Nick","Clouse", profileImg);
+        final User newUser = new User("nclouse","nickclouse03@gmail.com", pe.encode("password"),"Nick","Clouse", profileImg);
 
         final SocialLink sl = new SocialLink("https://www.instagram.com/nick.clouse/", Social.INSTAGRAM);
         newUser.addSocialLink(sl);
@@ -63,8 +64,8 @@ public class DataSeeder {
         lr.save(location);
         lr.save(location2);
 
-        final User newUser2 = new User("cmar","connor@gmail.com", "password","Connor","Marland",null);
-        final User newUser3 = new User("jswea","jake@gmail.com", "password","Jake","Sweatland",null);
+        final User newUser2 = new User("cmar","connor@gmail.com", pe.encode("password"),"Connor","Marland",null);
+        final User newUser3 = new User("jswea","jake@gmail.com", pe.encode("password"),"Jake","Sweatland",null);
 
         ur.save(newUser2);
         ur.save(newUser3);
