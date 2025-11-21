@@ -181,6 +181,8 @@ public class TripServiceImpl implements TripService{
             tripNode.set("geometry", routeData.route);
 
             an.add(tripNode);
+
+            break;
         }
 
         return rootNode;

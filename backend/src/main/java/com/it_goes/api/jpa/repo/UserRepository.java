@@ -17,6 +17,10 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
 
+    boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
+
     /**
      * Gets the number of days each user has skied between the start and end date
      * @param start Start date
