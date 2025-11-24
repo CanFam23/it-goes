@@ -1,5 +1,6 @@
 package com.it_goes.api.service;
 
+import com.it_goes.api.dto.UserDto;
 import com.it_goes.api.jpa.model.Season;
 import com.it_goes.api.jpa.model.User;
 import com.it_goes.api.jpa.projection.FirstNameDaysLocationYear;
@@ -7,8 +8,11 @@ import com.it_goes.api.jpa.projection.FirstNameDaysYear;
 import com.it_goes.api.jpa.repo.SeasonRepository;
 import com.it_goes.api.jpa.repo.UserRepository;
 import com.it_goes.api.util.exception.NotFoundException;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.validation.constraints.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,9 +27,12 @@ public class UserServiceImpl implements UserService{
 
     private final SeasonRepository seasonRepo;
 
-    public UserServiceImpl(UserRepository userRepo, SeasonRepository seasonRepo) {
+    private final PasswordEncoder passwordEncoder;
+
+    public UserServiceImpl(UserRepository userRepo, SeasonRepository seasonRepo, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.seasonRepo = seasonRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -149,5 +156,47 @@ public class UserServiceImpl implements UserService{
         }
 
         return daysSkied;
+    }
+
+    public Optional<User> createUser(UserDto userDto){
+        if (!UserService.validateUsername(userDto.username())){
+            logger.warn("createUser: Invalid username #{}", userDto.username());
+            return Optional.empty();
+        }
+
+        final User newUser = new User(
+                userDto.username(),
+                userDto.email(),
+                this.passwordEncoder.encode(userDto.password()),
+                userDto.firstName(),
+                userDto.lastName(),
+                userDto.profileImage()
+        );
+
+        try {
+            final User savedUser = userRepo.save(newUser);
+            logger.info("createUser: Saved user #{} to database", savedUser.getId());
+            return Optional.of(savedUser);
+        } catch(IllegalArgumentException | OptimisticLockException e) {
+            logger.error("createUser: Error saving new user {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public boolean deleteUserByEmail(@Email String email) {
+        if (email == null){
+            return false;
+        }
+
+        userRepo.deleteUserByEmail(email);
+
+        if (userRepo.existsByEmail(email)){
+            logger.warn("deleteUserByEmail: Failed to delete user");
+            return false;
+        } else {
+            logger.info("deleteUserByEmail: Deleted user");
+            return true;
+        }
     }
 }
