@@ -5,6 +5,7 @@ import com.it_goes.api.jpa.model.User;
 import com.it_goes.api.jpa.projection.FirstNameDaysLocationYear;
 import com.it_goes.api.jpa.projection.FirstNameDaysYear;
 import com.it_goes.api.util.exception.NotFoundException;
+import jakarta.validation.constraints.Email;
 
 import java.util.List;
 import java.util.Optional;
@@ -76,4 +77,6 @@ public interface UserService {
     List<FirstNameDaysLocationYear> getDaysSkiedEachLocation(Integer year);
     
     Optional<User> createUser(UserDto userDto);
+
+    boolean deleteUserByEmail(@Email String email);
 }
