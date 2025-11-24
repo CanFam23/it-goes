@@ -1,11 +1,13 @@
 package com.it_goes.api.service;
 
+import com.it_goes.api.dto.UserDto;
 import com.it_goes.api.jpa.model.User;
 import com.it_goes.api.jpa.projection.FirstNameDaysLocationYear;
 import com.it_goes.api.jpa.projection.FirstNameDaysYear;
 import com.it_goes.api.util.exception.NotFoundException;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
     int MIN_USERNAME_LENGTH = 3;
@@ -72,6 +74,6 @@ public interface UserService {
      * the name of each location they've skied at, and the year.
      */
     List<FirstNameDaysLocationYear> getDaysSkiedEachLocation(Integer year);
-
-
+    
+    Optional<User> createUser(UserDto userDto);
 }
