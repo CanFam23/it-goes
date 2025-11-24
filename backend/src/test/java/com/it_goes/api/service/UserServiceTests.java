@@ -1,5 +1,6 @@
 package com.it_goes.api.service;
 
+import com.it_goes.api.dto.UserDto;
 import com.it_goes.api.jpa.model.Season;
 import com.it_goes.api.jpa.model.User;
 import com.it_goes.api.jpa.projection.FirstNameDaysLocationYear;
@@ -13,7 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -47,6 +50,9 @@ public class UserServiceTests {
 
     @Mock
     SeasonRepository seasonRepo;
+
+    @Mock
+    PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -348,5 +354,87 @@ public class UserServiceTests {
     void getDaysSkiedEachLocation_invalidYear_farFuture_throws() {
         assertThatThrownBy(() -> userService.getDaysSkiedEachLocation(9999))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void createUser_validDto_savesAndReturnsUser() {
+        UserDto dto = new UserDto("validUser", "email@test.com", "pw", "fn", "ln", null);
+
+        User saved = new User("validUser","email@test.com","ENCODED","fn","ln",null);
+        ReflectionTestUtils.setField(saved, "id", 10L);
+
+        when(passwordEncoder.encode("pw")).thenReturn("ENCODED");
+        when(userRepo.save(any(User.class))).thenReturn(saved);
+
+        Optional<User> result = userService.createUser(dto);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(10L);
+        verify(userRepo, times(1)).save(any(User.class));
+    }
+
+    @Test
+    void createUser_invalidUsername_returnsEmpty() {
+        UserDto dto = new UserDto("bad user", "email@test.com", "pw", "fn", "ln", null);
+
+        // Mock static validateUsername
+        try (MockedStatic<UserService> mock = mockStatic(UserService.class)) {
+            mock.when(() -> UserService.validateUsername("bad user")).thenReturn(false);
+
+            Optional<User> result = userService.createUser(dto);
+
+            assertThat(result).isEmpty();
+            verify(userRepo, never()).save(any());
+        }
+    }
+
+    @Test
+    void createUser_repoThrows_returnsEmpty() {
+        UserDto dto = new UserDto("validUser", "email@test.com", "pw", "fn", "ln", null);
+
+        try (MockedStatic<UserService> mock = mockStatic(UserService.class)) {
+            mock.when(() -> UserService.validateUsername("validUser")).thenReturn(true);
+            when(passwordEncoder.encode("pw")).thenReturn("ENCODED");
+            when(userRepo.save(any(User.class))).thenThrow(new IllegalArgumentException("fail"));
+
+            Optional<User> result = userService.createUser(dto);
+
+            assertThat(result).isEmpty();
+        }
+    }
+
+    @Test
+    void deleteUserByEmail_validEmail_deletedSuccessfully() {
+        String email = "test@test.com";
+
+        when(userRepo.existsByEmail(email)).thenReturn(false);
+
+        boolean result = userService.deleteUserByEmail(email);
+
+        assertThat(result).isTrue();
+        verify(userRepo, times(1)).deleteUserByEmail(email);
+        verify(userRepo, times(1)).existsByEmail(email);
+    }
+
+    @Test
+    void deleteUserByEmail_validEmail_stillExists_returnsFalse() {
+        String email = "test@test.com";
+
+        when(userRepo.existsByEmail(email)).thenReturn(true);
+
+        boolean result = userService.deleteUserByEmail(email);
+
+        assertThat(result).isFalse();
+        verify(userRepo, times(1)).deleteUserByEmail(email);
+        verify(userRepo, times(1)).existsByEmail(email);
+    }
+
+    @Test
+    void deleteUserByEmail_nullEmail_returnsFalse() {
+        boolean result = userService.deleteUserByEmail(null);
+
+        assertThat(result).isFalse();
+        verify(userRepo, never()).deleteUserByEmail(any());
+        verify(userRepo, never()).existsByEmail(any());
     }
 }
