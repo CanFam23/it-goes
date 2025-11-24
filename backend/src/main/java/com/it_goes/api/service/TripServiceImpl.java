@@ -182,6 +182,7 @@ public class TripServiceImpl implements TripService{
 
             an.add(tripNode);
 
+            //TODO: REMOVE
             break;
         }
 

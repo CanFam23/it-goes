@@ -72,4 +72,6 @@ public interface UserService {
      * the name of each location they've skied at, and the year.
      */
     List<FirstNameDaysLocationYear> getDaysSkiedEachLocation(Integer year);
+
+
 }
