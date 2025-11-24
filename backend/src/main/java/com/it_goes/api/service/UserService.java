@@ -75,8 +75,18 @@ public interface UserService {
      * the name of each location they've skied at, and the year.
      */
     List<FirstNameDaysLocationYear> getDaysSkiedEachLocation(Integer year);
-    
+
+    /**
+     * Create and save a new user with the information in the given {@link UserDto} object.
+     * @param userDto Contains the information for the new user/
+     * @return User object if created, empty optional if not.
+     */
     Optional<User> createUser(UserDto userDto);
 
+    /**
+     * Deletes a user with the given email if found.
+     * @param email Email of user to delete.
+     * @return {@code true} if user was deleted, {@code false} otherwise.
+     */
     boolean deleteUserByEmail(@Email String email);
 }
