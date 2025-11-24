@@ -158,9 +158,22 @@ public class UserServiceImpl implements UserService{
         return daysSkied;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Optional<User> createUser(UserDto userDto){
         if (!UserService.validateUsername(userDto.username())){
             logger.warn("createUser: Invalid username #{}", userDto.username());
+            return Optional.empty();
+        }
+
+        if (userRepo.existsByUsername(userDto.username())) {
+            logger.warn("createUser: Username already exists");
+            return Optional.empty();
+        }
+
+        if (userRepo.existsByEmail(userDto.email())) {
+            logger.warn("createUser: Email already exists");
             return Optional.empty();
         }
 
@@ -183,9 +196,17 @@ public class UserServiceImpl implements UserService{
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean deleteUserByEmail(@Email String email) {
         if (email == null){
+            return false;
+        }
+
+        if (!userRepo.existsByEmail(email)) {
+            logger.warn("deleteUserByEmail: User not found with given email");
             return false;
         }
 
