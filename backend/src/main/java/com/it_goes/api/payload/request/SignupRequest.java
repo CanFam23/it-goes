@@ -9,6 +9,9 @@ import lombok.Setter;
 @Setter
 public class SignupRequest {
     @NotBlank
+    private String accessCode;
+
+    @NotBlank
     private String username;
 
     @NotBlank
