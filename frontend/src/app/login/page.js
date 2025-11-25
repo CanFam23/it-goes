@@ -45,7 +45,8 @@ export default function page() {
       localStorage.setItem("username", res.username || "Unknown username");
       localStorage.setItem("name", resData.firstName || "User");
 
-      router.push("/")
+      router.push("/");
+      router.refresh();
     } catch (err) {
       setError(error.message);
     } finally {
