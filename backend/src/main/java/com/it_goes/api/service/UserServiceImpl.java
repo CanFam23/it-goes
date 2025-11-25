@@ -70,11 +70,11 @@ public class UserServiceImpl implements UserService{
 
         final Optional<User> user = userRepo.findByUsername(username);
         if (user.isEmpty()) {
-            logger.warn("getUser: User not found with username #{}", username);
+            logger.warn("getUserByUsername: User not found with username #{}", username);
             throw new NotFoundException("User not found");
         }
 
-        logger.info("getUser: User found with username #{}", username);
+        logger.info("getUserByUsername: Given username matches user #{}", user.get().getId());
         return user.get();
     }
 
