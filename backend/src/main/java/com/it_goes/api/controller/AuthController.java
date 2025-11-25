@@ -2,27 +2,30 @@ package com.it_goes.api.controller;
 
 import com.it_goes.api.config.security.jwt.JwtUtils;
 import com.it_goes.api.config.security.user.UserDetailsImpl;
+import com.it_goes.api.dto.UserDto;
 import com.it_goes.api.jpa.model.User;
-import com.it_goes.api.jpa.repo.UserRepository;
 import com.it_goes.api.payload.request.LoginRequest;
 import com.it_goes.api.payload.request.SignupRequest;
-import com.it_goes.api.payload.response.JwtResponse;
+import com.it_goes.api.payload.response.UserDataResponse;
 import com.it_goes.api.payload.response.MessageResponse;
+import com.it_goes.api.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -34,10 +37,7 @@ public class AuthController {
     AuthenticationManager authenticationManager;
 
     @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    PasswordEncoder encoder;
+    UserService userService;
 
     @Autowired
     JwtUtils jwtUtils;
@@ -72,46 +72,66 @@ public class AuthController {
                         .body("User details not found");
             }
 
-            final List<String> roles = userDetails.getAuthorities().stream()
-                    .map(item -> item.getAuthority())
-                    .collect(Collectors.toList());
+            final ResponseCookie cookie = ResponseCookie.from("token", jwt)
+                    .httpOnly(true)
+                    .secure(false)     // must be false on localhost
+                    .sameSite("Lax")
+                    .path("/")
+                    .maxAge(86400)
+                    .build();
 
-            return ResponseEntity.ok(new JwtResponse(jwt,
-                    userDetails.getUser().getId(),
-                    userDetails.getUsername(),
-                    userDetails.getUser().getEmail(),
-                    roles));
+            return ResponseEntity
+                    .ok()
+                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                    .body(new UserDataResponse(
+                            userDetails.getUser().getUsername(),
+                            userDetails.getUser().getFirstName()
+                    ));
 
-        } catch (Exception e) {
-            logger.error("Authentication error: ", e);
-            throw e;
+        } catch (BadCredentialsException e) {
+            logger.error("Authentication error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid username / password"));
         }
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Username is already taken!"));
-        }
 
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use!"));
-        }
+        // TODO: validate access code
 
-        // Create new user's account
-        User user = new User(signUpRequest.getUsername(),
+        final User newUser = userService.createUser(new UserDto(
+                signUpRequest.getUsername(),
                 signUpRequest.getEmail(),
-                encoder.encode(signUpRequest.getPassword()),
+                signUpRequest.getPassword(),
                 signUpRequest.getFirstName(),
                 signUpRequest.getLastName(),
-                null);
+                null // TODO Need to handle saving images, prob in service
+        )).orElse(null);
 
-        userRepository.save(user);
+        if (newUser == null) {
+            logger.warn("registerUser: Failed to create user");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Failed to create user"));
+        }
+
+        logger.info("registerUser: Created new user with id #{}", newUser.getId());
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
+
+    @GetMapping("/protected")
+    public ResponseEntity<?> protectedEndpoint(HttpServletRequest request) {
+        final String token = request.getHeader("Cookie");
+        logger.info("Token: {}", token);
+
+        if (jwtUtils.validateJwtToken(token)) {
+            final String username = jwtUtils.getUserNameFromJwtToken(token);
+
+            final User foundUser = userService.getUserByUsername(username);
+
+            return ResponseEntity.ok(new UserDataResponse(foundUser.getUsername(), foundUser.getFirstName()));
+        }else{
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
 }
