@@ -97,7 +97,15 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 
-        // TODO: validate access code
+        if (!userService.validateAccessCode(signUpRequest.getAccessCode(), signUpRequest.getEmail())){
+            logger.warn("registerUser: Invalid access code given");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid access code"));
+        }
+
+        if (!signUpRequest.getPassword().equals(signUpRequest.getConfirmPassword())) {
+            logger.warn("registerUser: Passwords do not match");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Passwords do not match"));
+        }
 
         final User newUser = userService.createUser(new UserDto(
                 signUpRequest.getUsername(),
