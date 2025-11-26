@@ -41,6 +41,41 @@ public interface UserService {
         return true;
     }
 
+    /**
+     * Validates a password by ensuring its 8 characters, has a upper and lower letter,
+     * a digit, and a special character.
+     * @param password Password to validate
+     * @return {@code true} if password is valid, {@code false} otherwise.
+     */
+    static boolean validatePassword(String password) {
+        if (password == null) {
+            return false;
+        }
+
+        boolean longEnough = password.length() >= 8;
+        boolean hasUpper = password.matches(".*[A-Z].*");
+        boolean hasLower = password.matches(".*[a-z].*");
+        boolean hasDigit = password.matches(".*\\d.*");
+        boolean hasSpecial = password.matches(".*[!@#$%^&*(),.?\":{}|<>].*");
+
+        return longEnough && hasUpper && hasLower && hasDigit && hasSpecial;
+    }
+
+    /**
+     * Validates the given email with a basic pattern.
+     * @param email Email to validate
+     * @return {@code true} if email is valid, {@code false} otherwise.
+     */
+    static boolean validateEmail(String email) {
+        if (email == null) {
+            return false;
+        }
+
+        // Basic RFC-5322–compatible pattern for normal app usage
+        final String pattern = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        return email.matches(pattern);
+    }
+
 
     /**
      * Gets user by user id.

@@ -44,9 +44,7 @@ public class UserServiceImpl implements UserService{
         this.accessCodeRepo = accessCodeRepo;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public User getUser(Long id) {
         if (id == null || id < 1) {
@@ -64,9 +62,7 @@ public class UserServiceImpl implements UserService{
         return user.get();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public User getUserByUsername(String username) {
         username = username.toLowerCase().strip();
@@ -87,9 +83,7 @@ public class UserServiceImpl implements UserService{
         return user.get();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public List<FirstNameDaysYear> getDaysSkied(Integer year) {
         // Not the best practice, but I highly doubt I'm going to be posting a season outside of these years
@@ -127,9 +121,7 @@ public class UserServiceImpl implements UserService{
         return daysSkied;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public List<FirstNameDaysLocationYear> getDaysSkiedEachLocation(Integer year) {
         // Not the best practice, but I highly doubt I'm going to be posting a season outside of these years
@@ -167,12 +159,30 @@ public class UserServiceImpl implements UserService{
         return daysSkied;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public Optional<User> createUser(UserDto userDto){
         if (!UserService.validateUsername(userDto.username())){
             logger.warn("createUser: Invalid username #{}", userDto.username());
+            return Optional.empty();
+        }
+
+        if (!UserService.validatePassword(userDto.password())){
+            logger.warn("createUser: Invalid password");
+            return Optional.empty();
+        }
+
+        if (userDto.firstName() == null || userDto.firstName().isEmpty()) {
+            logger.warn("createUser: Invalid first name");
+            return Optional.empty();
+        }
+
+        if (userDto.lastName() == null || userDto.lastName().isEmpty()) {
+            logger.warn("createUser: Invalid last name");
+            return Optional.empty();
+        }
+
+        if (!UserService.validateEmail(userDto.email())){
+            logger.warn("createUser: Invalid email");
             return Optional.empty();
         }
 
@@ -205,9 +215,7 @@ public class UserServiceImpl implements UserService{
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc}*/
     @Override
     public boolean deleteUserByEmail(@Email String email) {
         if (email == null){
@@ -230,9 +238,7 @@ public class UserServiceImpl implements UserService{
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc}*/
     @Override
     public boolean validateAccessCode(@NotBlank String accessCode, @NotBlank String email) {
         final AccessCode code = accessCodeRepo.findByCode(accessCode.strip())
