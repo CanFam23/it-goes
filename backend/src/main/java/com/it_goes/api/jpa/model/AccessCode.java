@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @ToString
 @Entity
 @Table(name="accessCode", indexes = {
-        @Index(name = "idx_access_code", columnList = "accessCode", unique = true),
+        @Index(name = "idx_code", columnList = "code", unique = true),
         @Index(name = "idx_email", columnList = "email", unique = true)
 })
 public class AccessCode {
