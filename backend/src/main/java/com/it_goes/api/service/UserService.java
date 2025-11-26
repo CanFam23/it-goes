@@ -6,6 +6,7 @@ import com.it_goes.api.jpa.projection.FirstNameDaysLocationYear;
 import com.it_goes.api.jpa.projection.FirstNameDaysYear;
 import com.it_goes.api.util.exception.NotFoundException;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 import java.util.Optional;
@@ -96,5 +97,5 @@ public interface UserService {
      * @param email Email to check
      * @return {@code true} if the code is valid, {@code false} otherwise.
      */
-    boolean validateAccessCode(String accessCode, String email);
+    boolean validateAccessCode(@NotBlank String accessCode, @NotBlank String email);
 }
