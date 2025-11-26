@@ -1,13 +1,16 @@
 package com.it_goes.api.service;
 
 import com.it_goes.api.dto.UserDto;
+import com.it_goes.api.jpa.model.AccessCode;
 import com.it_goes.api.jpa.model.Season;
 import com.it_goes.api.jpa.model.User;
 import com.it_goes.api.jpa.projection.FirstNameDaysLocationYear;
 import com.it_goes.api.jpa.projection.FirstNameDaysYear;
+import com.it_goes.api.jpa.repo.AccessCodeRepository;
 import com.it_goes.api.jpa.repo.SeasonRepository;
 import com.it_goes.api.jpa.repo.UserRepository;
 import com.it_goes.api.util.exception.NotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeAll;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
@@ -19,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,6 +54,9 @@ public class UserServiceTests {
 
     @Mock
     SeasonRepository seasonRepo;
+
+    @Mock
+    AccessCodeRepository accessCodeRepo;
 
     @Mock
     PasswordEncoder passwordEncoder;
@@ -464,5 +471,195 @@ public class UserServiceTests {
         assertThat(result).isTrue();
         verify(userRepo, times(1)).deleteUserByEmail(email);
         verify(userRepo, times(2)).existsByEmail(email);
+    }
+
+    @Test
+    void validateAccessCode_validCodeAndEmail_returnsTrue() {
+        String email = "test@test.com";
+        AccessCode accessCode = new AccessCode(email);
+        ReflectionTestUtils.setField(accessCode, "code", "ABC12345");
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("ABC12345", email);
+
+        assertThat(result).isTrue();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+    }
+
+    @Test
+    void validateAccessCode_validCodeAndEmailWithWhitespace_returnsTrue() {
+        String email = "test@test.com";
+        AccessCode accessCode = new AccessCode(email);
+        ReflectionTestUtils.setField(accessCode, "code", "ABC12345");
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("  ABC12345  ", "  test@test.com  ");
+
+        assertThat(result).isTrue();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+    }
+
+    @Test
+    void validateAccessCode_codeNotFound_searchesByEmail_returnsTrue() {
+        String email = "test@test.com";
+        AccessCode accessCode = new AccessCode(email);
+        ReflectionTestUtils.setField(accessCode, "code", "ABC12345");
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.empty());
+        when(accessCodeRepo.findByEmail(email)).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("ABC12345", email);
+
+        assertThat(result).isTrue();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+        verify(accessCodeRepo, times(1)).findByEmail(email);
+    }
+
+    @Test
+    void validateAccessCode_codeNotFoundAndEmailNotFound_returnsFalse() {
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.empty());
+        when(accessCodeRepo.findByEmail("test@test.com")).thenReturn(Optional.empty());
+
+        boolean result = userService.validateAccessCode("ABC12345", "test@test.com");
+
+        assertThat(result).isFalse();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+        verify(accessCodeRepo, times(1)).findByEmail("test@test.com");
+    }
+
+    @Test
+    void validateAccessCode_codeFoundButCodeMismatch_returnsFalse() {
+        String email = "test@test.com";
+        AccessCode accessCode = new AccessCode(email);
+        ReflectionTestUtils.setField(accessCode, "code", "XYZ78901");
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("ABC12345", email);
+
+        assertThat(result).isFalse();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+    }
+
+    @Test
+    void validateAccessCode_codeFoundButEmailMismatch_returnsFalse() {
+        AccessCode accessCode = new AccessCode("wrong@test.com");
+        ReflectionTestUtils.setField(accessCode, "code", "ABC12345");
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("ABC12345", "test@test.com");
+
+        assertThat(result).isFalse();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+    }
+
+    @Test
+    void validateAccessCode_emailFoundButCodeMismatch_returnsFalse() {
+        String email = "test@test.com";
+        AccessCode accessCode = new AccessCode(email);
+        ReflectionTestUtils.setField(accessCode, "code", "XYZ78901");
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.empty());
+        when(accessCodeRepo.findByEmail(email)).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("ABC12345", email);
+
+        assertThat(result).isFalse();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+        verify(accessCodeRepo, times(1)).findByEmail(email);
+    }
+
+    @Test
+    void validateAccessCode_emailFoundButEmailMismatch_returnsFalse() {
+        AccessCode accessCode = new AccessCode("wrong@test.com");
+        ReflectionTestUtils.setField(accessCode, "code", "ABC12345");
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.empty());
+        when(accessCodeRepo.findByEmail("test@test.com")).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("ABC12345", "test@test.com");
+
+        assertThat(result).isFalse();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+        verify(accessCodeRepo, times(1)).findByEmail("test@test.com");
+    }
+
+    @Test
+    void validateAccessCode_usedCode_returnsFalse() {
+        String email = "test@test.com";
+        AccessCode accessCode = new AccessCode(email);
+        ReflectionTestUtils.setField(accessCode, "code", "ABC12345");
+        accessCode.setUsed(); // Mark as used
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("ABC12345", email);
+
+        assertThat(result).isFalse();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+    }
+
+    @Test
+    void validateAccessCode_expiredCode_returnsFalse() {
+        String email = "test@test.com";
+        AccessCode accessCode = new AccessCode(email);
+        ReflectionTestUtils.setField(accessCode, "code", "ABC12345");
+        ReflectionTestUtils.setField(accessCode, "expiresAt", LocalDateTime.now().minusDays(1));
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("ABC12345", email);
+
+        assertThat(result).isFalse();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+    }
+
+    @Test
+    void validateAccessCode_codeExpiresInFuture_returnsTrue() {
+        String email = "test@test.com";
+        AccessCode accessCode = new AccessCode(email);
+        ReflectionTestUtils.setField(accessCode, "code", "ABC12345");
+        ReflectionTestUtils.setField(accessCode, "expiresAt", LocalDateTime.now().plusDays(5));
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("ABC12345", email);
+
+        assertThat(result).isTrue();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+    }
+
+    @Test
+    void validateAccessCode_codeExpiresExactlyNow_returnsFalse() {
+        String email = "test@test.com";
+        AccessCode accessCode = new AccessCode(email);
+        ReflectionTestUtils.setField(accessCode, "code", "ABC12345");
+        ReflectionTestUtils.setField(accessCode, "expiresAt", LocalDateTime.now());
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("ABC12345", email);
+
+        assertThat(result).isFalse();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
+    }
+
+    @Test
+    void validateAccessCode_usedAndExpired_returnsFalse() {
+        String email = "test@test.com";
+        AccessCode accessCode = new AccessCode(email);
+        ReflectionTestUtils.setField(accessCode, "code", "ABC12345");
+        ReflectionTestUtils.setField(accessCode, "expiresAt", LocalDateTime.now().minusDays(1));
+        accessCode.setUsed();
+
+        when(accessCodeRepo.findByCode("ABC12345")).thenReturn(Optional.of(accessCode));
+
+        boolean result = userService.validateAccessCode("ABC12345", email);
+
+        assertThat(result).isFalse();
+        verify(accessCodeRepo, times(1)).findByCode("ABC12345");
     }
 }

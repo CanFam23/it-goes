@@ -89,4 +89,12 @@ public interface UserService {
      * @return {@code true} if user was deleted, {@code false} otherwise.
      */
     boolean deleteUserByEmail(@Email String email);
+
+    /**
+     * Checks if the given {@link com.it_goes.api.jpa.model.AccessCode} is valid and for the given email.
+     * @param accessCode Access code to use
+     * @param email Email to check
+     * @return {@code true} if the code is valid, {@code false} otherwise.
+     */
+    boolean validateAccessCode(String accessCode, String email);
 }
