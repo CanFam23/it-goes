@@ -51,13 +51,11 @@ class UserDetailsServiceTests {
 
     @Test
     void loadUserByUsernameFoundUserWithSpaces() {
-        final String input = "   usernameTwo   ";
         final String stored = "usernameTwo";
 
         User user = new User(stored, "email", "hashedPw", "f", "l", null);
 
         when(userRepository.findByUsername(stored)).thenReturn(Optional.of(user));
-        when(userRepository.findByUsername(input)).thenReturn(Optional.empty()); // never stored with spaces
 
         UserDetailsImpl details =
                 (UserDetailsImpl) userDetailsService.loadUserByUsername(stored);
@@ -122,4 +120,3 @@ class UserDetailsServiceTests {
         assertEquals(user2, d2.getUser());
     }
 }
-

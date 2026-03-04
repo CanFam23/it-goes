@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -365,83 +364,67 @@ public class UserServiceTests {
 
     @Test
     void createUser_usernameExists_returnsEmpty() {
-        UserDto dto = new UserDto("validUser", "email@test.com", "pw", "fn", "ln", null);
+        UserDto dto = new UserDto("validUser", "email@test.com", "Valid123!", "fn", "ln", null);
 
-        try (MockedStatic<UserService> mock = mockStatic(UserService.class)) {
-            mock.when(() -> UserService.validateUsername("validUser")).thenReturn(true);
+        when(userRepo.existsByUsername("validUser")).thenReturn(true);
 
-            when(userRepo.existsByUsername("validUser")).thenReturn(true);
+        Optional<User> result = userService.createUser(dto);
 
-            Optional<User> result = userService.createUser(dto);
-
-            assertThat(result).isEmpty();
-            verify(userRepo, never()).save(any());
-            verify(userRepo).existsByUsername("validUser");
-            verify(userRepo, never()).existsByEmail(any());
-        }
+        assertThat(result).isEmpty();
+        verify(userRepo, never()).save(any());
+        verify(userRepo).existsByUsername("validUser");
+        verify(userRepo, never()).existsByEmail(any());
     }
 
     @Test
     void createUser_emailExists_returnsEmpty() {
-        UserDto dto = new UserDto("validUser", "email@test.com", "pw", "fn", "ln", null);
+        UserDto dto = new UserDto("validUser", "email@test.com", "Valid123!", "fn", "ln", null);
 
-        try (MockedStatic<UserService> mock = mockStatic(UserService.class)) {
-            mock.when(() -> UserService.validateUsername("validUser")).thenReturn(true);
+        when(userRepo.existsByUsername("validUser")).thenReturn(false);
+        when(userRepo.existsByEmail("email@test.com")).thenReturn(true);
 
-            when(userRepo.existsByUsername("validUser")).thenReturn(false);
-            when(userRepo.existsByEmail("email@test.com")).thenReturn(true);
+        Optional<User> result = userService.createUser(dto);
 
-            Optional<User> result = userService.createUser(dto);
-
-            assertThat(result).isEmpty();
-            verify(userRepo, never()).save(any());
-            verify(userRepo).existsByUsername("validUser");
-            verify(userRepo).existsByEmail("email@test.com");
-        }
+        assertThat(result).isEmpty();
+        verify(userRepo, never()).save(any());
+        verify(userRepo).existsByUsername("validUser");
+        verify(userRepo).existsByEmail("email@test.com");
     }
 
     @Test
     void createUser_validDto_savesAndReturnsUser() {
-        UserDto dto = new UserDto("validUser", "email@test.com", "pw", "fn", "ln", null);
+        UserDto dto = new UserDto("validUser", "email@test.com", "Valid123!", "fn", "ln", null);
 
         User saved = new User("validUser","email@test.com","ENCODED","fn","ln",null);
         ReflectionTestUtils.setField(saved, "id", 10L);
 
-        try (MockedStatic<UserService> mock = mockStatic(UserService.class)) {
-            mock.when(() -> UserService.validateUsername("validUser")).thenReturn(true);
+        when(userRepo.existsByUsername("validUser")).thenReturn(false);
+        when(userRepo.existsByEmail("email@test.com")).thenReturn(false);
+        when(passwordEncoder.encode("Valid123!")).thenReturn("ENCODED");
+        when(userRepo.save(any(User.class))).thenReturn(saved);
 
-            when(userRepo.existsByUsername("validUser")).thenReturn(false);
-            when(userRepo.existsByEmail("email@test.com")).thenReturn(false);
-            when(passwordEncoder.encode("pw")).thenReturn("ENCODED");
-            when(userRepo.save(any(User.class))).thenReturn(saved);
+        Optional<User> result = userService.createUser(dto);
 
-            Optional<User> result = userService.createUser(dto);
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(10L);
 
-            assertThat(result).isPresent();
-            assertThat(result.get().getId()).isEqualTo(10L);
-
-            verify(userRepo).existsByUsername("validUser");
-            verify(userRepo).existsByEmail("email@test.com");
-            verify(userRepo).save(any(User.class));
-        }
+        verify(userRepo).existsByUsername("validUser");
+        verify(userRepo).existsByEmail("email@test.com");
+        verify(userRepo).save(any(User.class));
     }
 
     @Test
     void createUser_repoThrows_returnsEmpty() {
-        UserDto dto = new UserDto("validUser", "email@test.com", "pw", "fn", "ln", null);
+        UserDto dto = new UserDto("validUser", "email@test.com", "Valid123!", "fn", "ln", null);
 
-        try (MockedStatic<UserService> mock = mockStatic(UserService.class)) {
-            mock.when(() -> UserService.validateUsername("validUser")).thenReturn(true);
+        when(userRepo.existsByUsername("validUser")).thenReturn(false);
+        when(userRepo.existsByEmail("email@test.com")).thenReturn(false);
+        when(passwordEncoder.encode("Valid123!")).thenReturn("ENCODED");
+        when(userRepo.save(any(User.class))).thenThrow(new IllegalArgumentException("fail"));
 
-            when(userRepo.existsByUsername("validUser")).thenReturn(false);
-            when(userRepo.existsByEmail("email@test.com")).thenReturn(false);
-            when(passwordEncoder.encode("pw")).thenReturn("ENCODED");
-            when(userRepo.save(any(User.class))).thenThrow(new IllegalArgumentException("fail"));
+        Optional<User> result = userService.createUser(dto);
 
-            Optional<User> result = userService.createUser(dto);
-
-            assertThat(result).isEmpty();
-        }
+        assertThat(result).isEmpty();
     }
 
     @Test
