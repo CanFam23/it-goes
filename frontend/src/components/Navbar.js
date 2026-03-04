@@ -11,8 +11,8 @@ export default function Navbar(props) {
       href={link}
       key={key}
       className={`font-anon font-bold text-2xl lg:text-3xl text-nowrap mt-auto mb-2 hover:underline ${
-        key === "Log in" ? "ml-auto mr-4 flex flex-nowrap" : ""
-      }`} // Last link (Login) gets pushed to right
+        ["Log in","Log out"].includes(key) ? "ml-auto mr-4 flex flex-nowrap" : ""
+      }`} // Last link (Login / Logout) gets pushed to right
     >
       {key}
     </Link>
