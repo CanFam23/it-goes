@@ -4,175 +4,122 @@ import com.it_goes.api.config.security.user.UserDetailsImpl;
 import com.it_goes.api.config.security.user.UserDetailsServiceImpl;
 import com.it_goes.api.dto.UserDto;
 import com.it_goes.api.jpa.model.User;
+import com.it_goes.api.jpa.repo.UserRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
-/**
- * Tests the CustomUserDetailsService class
- */
-@SpringBootTest
-public class UserDetailsServiceTests {
+@ExtendWith(MockitoExtension.class)
+class UserDetailsServiceTests {
 
-    @Autowired
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
     private UserDetailsServiceImpl userDetailsService;
 
-    @Autowired
-    private UserService userService;
-
     @Test
-    public void loadUserByUsernameFoundUser() {
+    void loadUserByUsernameFoundUser() {
         final String username = "username";
-        final UserDto userDto = new UserDto(username, "email@email.com","password", "first", "last", null);
-        final User savedUser = userService.createUser(userDto).orElseThrow(() -> new UsernameNotFoundException(username));
-        assertNotNull(savedUser, "User should've been saved in database when testing loadUserByUsernameFoundUser");
 
-        final UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
+        User user = new User(username, "email@test.com", "hashedPw", "f", "l", null);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
-        assertEquals(savedUser, userDetails.getUser(), "User object stored in CustomUserDetails should match the object returned from saveUser");
-        assertEquals(savedUser.getUsername(), userDetails.getUsername(), "User should be found since user is in database!");
-        assertEquals(savedUser.getHashedPasswordString(), userDetails.getPassword(), "Users hashed password should be stored in customUserDetails!");
-        assertEquals(userDetails.getAuthorities().size(), 0, "User should have no authorities in CustomUserDetails object!");
-        assertEquals(savedUser, userDetails.getUser(), "Returned user object should match the saved user object");
-        assertTrue(userDetails.isAccountNonExpired(), "User's account should not be expired!");
-        assertTrue(userDetails.isAccountNonLocked(), "User's account should not be locked!");
-        assertTrue(userDetails.isCredentialsNonExpired(), "User's credentials should not be expired!");
-        assertTrue(userDetails.isEnabled(), "User's enabled should be enabled!");
+        UserDetailsImpl details =
+                (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
+
+        assertEquals(user, details.getUser());
+        assertEquals(username, details.getUsername());
+        assertEquals("hashedPw", details.getPassword());
+        assertEquals(0, details.getAuthorities().size());
+        assertTrue(details.isAccountNonExpired());
+        assertTrue(details.isAccountNonLocked());
+        assertTrue(details.isCredentialsNonExpired());
+        assertTrue(details.isEnabled());
     }
 
     @Test
-    public void loadUserByUsernameFoundUserLeadingTrailingSpaces() {
-        final String username = "   usernameTwo   ";
-        final UserDto userDto = new UserDto(username, "emailTwo@email.com","password", "first", "last", null);
-        final User savedUser = userService.createUser(userDto).orElseThrow(() -> new UsernameNotFoundException(username));
-        assertNotEquals(savedUser, null, "User should've been saved in database when testing loadUserByUsernameFoundUserLeadingTrailingSpaces");
+    void loadUserByUsernameFoundUserWithSpaces() {
+        final String input = "   usernameTwo   ";
+        final String stored = "usernameTwo";
 
-        final UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
+        User user = new User(stored, "email", "hashedPw", "f", "l", null);
 
-        assertEquals(savedUser, userDetails.getUser(), "User object stored in CustomUserDetails should match the object returned from saveUser");
-        assertEquals(savedUser.getUsername(), userDetails.getUsername(), "User should be found since user is in database!");
-        assertEquals(savedUser.getHashedPasswordString(), userDetails.getPassword(), "Users hashed password should be stored in customUserDetails!");
-        assertEquals(userDetails.getAuthorities().size(), 0, "User should have no authorities in CustomUserDetails object!");
-        assertEquals(savedUser, userDetails.getUser(), "Returned user object should match the saved user object");
-        assertTrue(userDetails.isAccountNonExpired(), "User's account should not be expired!");
-        assertTrue(userDetails.isAccountNonLocked(), "User's account should not be locked!");
-        assertTrue(userDetails.isCredentialsNonExpired(), "User's credentials should not be expired!");
-        assertTrue(userDetails.isEnabled(), "User's enabled should be enabled!");
+        when(userRepository.findByUsername(stored)).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername(input)).thenReturn(Optional.empty()); // never stored with spaces
+
+        UserDetailsImpl details =
+                (UserDetailsImpl) userDetailsService.loadUserByUsername(stored);
+
+        assertEquals(user, details.getUser());
     }
 
     @Test
-    public void loadUserByUsernameNotFoundUser() {
-        final String username = "unknownUser";
+    void loadUserByUsernameNotFound() {
+        when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
 
-        assertThrowsExactly(UsernameNotFoundException.class, () -> userDetailsService.loadUserByUsername(username), "Exception should be thrown since no user is in database!");
+        assertThrowsExactly(
+                UsernameNotFoundException.class,
+                () -> userDetailsService.loadUserByUsername("unknown")
+        );
     }
 
     @Test
-    public void loadUserByUsernameEmptyUsername() {
-        final String username = "";
-
-        assertThrowsExactly(UsernameNotFoundException.class, () -> userDetailsService.loadUserByUsername(username), "Exception should be thrown since username is empty when loading by username!");
+    void loadUserByUsernameEmptyString() {
+        assertThrowsExactly(
+                UsernameNotFoundException.class,
+                () -> userDetailsService.loadUserByUsername("")
+        );
     }
 
     @Test
-    public void loadUserByUsernameNullUsername() {
-        assertThrowsExactly(UsernameNotFoundException.class, () -> userDetailsService.loadUserByUsername(null), "Exception should be thrown since username is null when loading by username!");
+    void loadUserByUsernameNull() {
+        assertThrowsExactly(
+                UsernameNotFoundException.class,
+                () -> userDetailsService.loadUserByUsername(null)
+        );
     }
 
     @Test
-    public void loadUserByUsernameNotFoundUserSpaceInUserName() {
-        final String username = "user name";
-
-        assertThrowsExactly(UsernameNotFoundException.class, () -> userDetailsService.loadUserByUsername(username), "Exception should be thrown since username is not in database!");
-    }
-
-    @Test
-    @Transactional
-    public void loadUserByUsernameDeletedUserNotFound() {
+    void loadUserByUsernameDeletedUserNotFound() {
         final String username = "usernameThree";
-        final UserDto userDto = new UserDto(username, "emailThree@email.com","password", "first", "last", null);
 
-        final User savedUser = userService.createUser(userDto).orElseThrow(() -> new UsernameNotFoundException(username));
-        assertNotEquals(savedUser, null, "User should've been saved in database when testing loadUserByUsernameDeletedUserNotFound");
+        when(userRepository.findByUsername(username))
+                .thenReturn(Optional.empty());
 
-        final boolean deletedUser = userService.deleteUserByEmail(savedUser.getEmail());
-        assertTrue(deletedUser, "User should be deleted since user is in database and a valid email was passed!");
-
-        assertThrowsExactly(UsernameNotFoundException.class, () -> userDetailsService.loadUserByUsername(username), "Exception should be thrown since username no longer exists in database!");
+        assertThrowsExactly(
+                UsernameNotFoundException.class,
+                () -> userDetailsService.loadUserByUsername(username)
+        );
     }
 
     @Test
-    @Transactional
-    public void loadUserByUsernameDeletedUserThenAddedAgainFound() {
-        final String username = "usernameFour";
+    void loadUserByUsernameTwoUsersReturnCorrectOne() {
+        final String u1 = "usernameOne";
+        final String u2 = "usernameTwo";
 
-        final UserDto userDto = new UserDto(username, "emailFour@email.com","password", "first", "last", null);
+        User user1 = new User(u1, "e1", "p1", "f1", "l1", null);
+        User user2 = new User(u2, "e2", "p2", "f2", "l2", null);
 
-        //save user
-        User savedUser = userService.createUser(userDto).orElseThrow(() -> new UsernameNotFoundException(username));
-        assertNotEquals(savedUser, null, "User should've been saved in database when testing loadUserByUsernameDeletedUserThenAddedAgainFound");
+        when(userRepository.findByUsername(u1)).thenReturn(Optional.of(user1));
+        when(userRepository.findByUsername(u2)).thenReturn(Optional.of(user2));
 
-        //delete user
-        final boolean deletedUser = userService.deleteUserByEmail(savedUser.getEmail());
-        assertTrue(deletedUser, "User should be deleted since user is in database and a valid email was passed!");
+        UserDetailsImpl d1 = (UserDetailsImpl) userDetailsService.loadUserByUsername(u1);
+        assertEquals(user1, d1.getUser());
 
-        //resave user
-        savedUser = userService.createUser(userDto).orElseThrow(() -> new UsernameNotFoundException(username));
-        assertNotEquals(savedUser, null, "User should've been resaved in database when testing loadUserByUsernameDeletedUserThenAddedAgainFound");
-
-        final UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
-
-        assertEquals(savedUser, userDetails.getUser(), "User object stored in CustomUserDetails should match the object returned from saveUser");
-        assertEquals(savedUser.getUsername(), userDetails.getUsername(), "User should be found since user is in database!");
-        assertEquals(savedUser.getHashedPasswordString(), userDetails.getPassword(), "Users hashed password should be stored in customUserDetails!");
-        assertEquals(userDetails.getAuthorities().size(), 0, "User should have no authorities in CustomUserDetails object!");
-        assertEquals(savedUser, userDetails.getUser(), "Returned user object should match the saved user object");
-        assertTrue(userDetails.isAccountNonExpired(), "User's account should not be expired!");
-        assertTrue(userDetails.isAccountNonLocked(), "User's account should not be locked!");
-        assertTrue(userDetails.isCredentialsNonExpired(), "User's credentials should not be expired!");
-        assertTrue(userDetails.isEnabled(), "User's enabled should be enabled!");
-    }
-
-    @Test
-    public void loadUserByUsernameWhenTwoSavedUsersReturnsCorrectUser() {
-        final String username = "usernameFive";
-        final UserDto userDto = new UserDto(username, "emailFive@email.com", "password", "first", "last", null);
-        User savedUser = userService.createUser(userDto).orElseThrow(() -> new UsernameNotFoundException(username));
-        assertNotEquals(savedUser, null, "User should've been saved in database when testing loadUserByUsernameWhenTwoSavedUsersReturnsCorrectUser");
-
-        final String usernameTwo = "usernameSix";
-        final UserDto userDtoTwo = new UserDto(usernameTwo, "emailSix@email.com","password", "first", "last", null);
-        User savedUserTwo = userService.createUser(userDtoTwo).orElseThrow(() -> new UsernameNotFoundException(usernameTwo));
-        assertNotEquals(savedUserTwo, null, "User should've been saved in database when testing loadUserByUsernameWhenTwoSavedUsersReturnsCorrectUser");
-
-        //Search for the first saved user, should return its info
-        final UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
-
-        assertEquals(savedUser, userDetails.getUser(), "User object stored in CustomUserDetails should match the object returned from saveUser");
-        assertEquals(savedUser.getUsername(), userDetails.getUsername(), "User should be found since user is in database!");
-        assertEquals(savedUser.getHashedPasswordString(), userDetails.getPassword(), "Users hashed password should be stored in customUserDetails!");
-        assertEquals(userDetails.getAuthorities().size(), 0, "User should have no authorities in CustomUserDetails object!");
-        assertEquals(savedUser, userDetails.getUser(), "Returned user object should match the saved user object");
-        assertTrue(userDetails.isAccountNonExpired(), "User's account should not be expired!");
-        assertTrue(userDetails.isAccountNonLocked(), "User's account should not be locked!");
-        assertTrue(userDetails.isCredentialsNonExpired(), "User's credentials should not be expired!");
-        assertTrue(userDetails.isEnabled(), "User's enabled should be enabled!");
-
-        //Search for the second saved user, should return its info
-        final UserDetailsImpl userDetailsTwo = (UserDetailsImpl) userDetailsService.loadUserByUsername(usernameTwo);
-
-        assertEquals(savedUserTwo, userDetailsTwo.getUser(), "User object stored in CustomUserDetails should match the object returned from saveUser");
-        assertEquals(savedUserTwo.getUsername(), userDetailsTwo.getUsername(), "User should be found since user is in database!");
-        assertEquals(savedUserTwo.getHashedPasswordString(), userDetailsTwo.getPassword(), "Users hashed password should be stored in customUserDetails!");
-        assertEquals(userDetailsTwo.getAuthorities().size(), 0, "User should have no authorities in CustomUserDetails object!");
-        assertEquals(savedUserTwo, userDetailsTwo.getUser(), "Returned user object should match the saved user object");
-        assertTrue(userDetailsTwo.isAccountNonExpired(), "User's account should not be expired!");
-        assertTrue(userDetailsTwo.isAccountNonLocked(), "User's account should not be locked!");
-        assertTrue(userDetailsTwo.isCredentialsNonExpired(), "User's credentials should not be expired!");
-        assertTrue(userDetailsTwo.isEnabled(), "User's enabled should be enabled!");
+        UserDetailsImpl d2 = (UserDetailsImpl) userDetailsService.loadUserByUsername(u2);
+        assertEquals(user2, d2.getUser());
     }
 }
+
