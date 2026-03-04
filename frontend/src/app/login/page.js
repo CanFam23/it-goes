@@ -62,7 +62,7 @@ export default function page() {
       <h1 className="text-2xl font-bold">Log In</h1>
       <p className="text-sm">
         Have an access code?
-        <Link href="" className="hover:underline p-1">
+        <Link href="/signup" className="hover:underline p-1">
           Sign up here
         </Link>
       </p>
