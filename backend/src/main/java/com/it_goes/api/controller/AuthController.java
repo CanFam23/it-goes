@@ -85,7 +85,9 @@ public class AuthController {
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
                     .body(new UserDataResponse(
                             userDetails.getUser().getUsername(),
-                            userDetails.getUser().getFirstName()
+                            userDetails.getUser().getEmail(),
+                            userDetails.getUser().getFirstName(),
+                            userDetails.getUser().getLastName()
                     ));
 
         } catch (BadCredentialsException e) {
@@ -136,7 +138,12 @@ public class AuthController {
 
             final User foundUser = userService.getUserByUsername(username);
 
-            return ResponseEntity.ok(new UserDataResponse(foundUser.getUsername(), foundUser.getFirstName()));
+            return ResponseEntity.ok(new UserDataResponse(
+                    foundUser.getUsername(),
+                    foundUser.getEmail(),
+                    foundUser.getFirstName(),
+                    foundUser.getLastName()
+            ));
         }else{
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
