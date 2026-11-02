@@ -5,6 +5,7 @@ import com.it_goes.api.dto.TripDto;
 import com.it_goes.api.dto.TripSummaryDto;
 import com.it_goes.api.jpa.model.*;
 import com.it_goes.api.jpa.repo.TripRepository;
+import com.it_goes.api.jpa.projection.GeoJsonDistanceElevation;
 import com.it_goes.api.util.enums.Country;
 import com.it_goes.api.util.enums.State;
 import com.it_goes.api.util.exception.NotFoundException;
@@ -19,6 +20,7 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.*;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,6 +28,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -121,11 +124,11 @@ public class TripServiceTests {
     }
 
     @Test
-    void getTripSummaries_noneFound_throwsException(){
+    void getTripSummaries_noneFound_returnsEmptyPage(){
         when(tripRepo.findAllByOrderByDateOfTripDesc(any(Pageable.class)))
                 .thenReturn(Page.empty());
 
-        assertThatThrownBy(() -> tripService.getTripSummaries(2, 0)).isInstanceOf(NotFoundException.class);
+        assertThat(tripService.getTripSummaries(2, 0).getContent()).isEmpty();
         verify(tripRepo, times(1)).findAllByOrderByDateOfTripDesc(any(Pageable.class));
     }
 
@@ -152,7 +155,7 @@ public class TripServiceTests {
         when(tripRepo.findAllByOrderByDateOfTripDesc(any(Pageable.class)))
                 .thenReturn(Page.empty());
 
-        assertThatThrownBy(() -> tripService.getTripSummaries(3, 1)).isInstanceOf(NotFoundException.class);
+        assertThat(tripService.getTripSummaries(3, 1).getContent()).isEmpty();
         verify(tripRepo, times(1)).findAllByOrderByDateOfTripDesc(any(Pageable.class));
     }
 
@@ -309,5 +312,46 @@ public class TripServiceTests {
     }
 
     // TODO: More testing for getAllTripFeatureRoutes
+
+    @Test
+    void getAllTripFeatureRoutes_includesEveryStoredRoute() {
+        final Trip first = new Trip("First", user, location, LocalDate.of(2025, 1, 1));
+        final Trip second = new Trip("Second", user, location, LocalDate.of(2025, 1, 2));
+        ReflectionTestUtils.setField(first, "id", 1L);
+        ReflectionTestUtils.setField(second, "id", 2L);
+        when(tripRepo.findAll()).thenReturn(List.of(first, second));
+        final GeoJsonDistanceElevation firstRoute = mock(GeoJsonDistanceElevation.class);
+        final GeoJsonDistanceElevation secondRoute = mock(GeoJsonDistanceElevation.class);
+        when(firstRoute.getGeojson()).thenReturn("{\"id\":1,\"type\":\"LineString\",\"coordinates\":[[1,2],[3,4]]}");
+        when(secondRoute.getGeojson()).thenReturn("{\"id\":2,\"type\":\"LineString\",\"coordinates\":[[5,6],[7,8]]}");
+        when(tripRepo.getAllTripRoutes()).thenReturn(Set.of(firstRoute, secondRoute));
+
+        final JsonNode features = tripService.getAllTripFeatureRoutes().get("features");
+
+        assertThat(features).hasSize(2);
+    }
+
+    @Test
+    void getAllTripFeatureRoutes_noTripsReturnsEmptyCollection() {
+        when(tripRepo.findAll()).thenReturn(List.of());
+        when(tripRepo.getAllTripRoutes()).thenReturn(Set.of());
+
+        final JsonNode result = tripService.getAllTripFeatureRoutes();
+
+        assertThat(result.get("type").asText()).isEqualTo("FeatureCollection");
+        assertThat(result.get("features")).isEmpty();
+    }
+
+    @Test
+    void getAllTripFeatureRoutes_malformedRouteIsAnError() {
+        final Trip trip = new Trip("Trip", user, location, LocalDate.of(2025, 1, 1));
+        when(tripRepo.findAll()).thenReturn(List.of(trip));
+        final GeoJsonDistanceElevation route = mock(GeoJsonDistanceElevation.class);
+        when(route.getGeojson()).thenReturn("invalid json");
+        when(tripRepo.getAllTripRoutes()).thenReturn(Set.of(route));
+
+        assertThatThrownBy(() -> tripService.getAllTripFeatureRoutes())
+                .isInstanceOf(IllegalStateException.class);
+    }
 
 }

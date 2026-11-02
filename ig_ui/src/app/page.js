@@ -1,4 +1,3 @@
-import { headers } from 'next/headers';
 import Image from "next/image";
 import Trips from "@/components/Trips";
 import { getTrips } from "@/lib/getTrips";
@@ -7,7 +6,7 @@ import Title from "@/components/Title";
 
 export default async function Home() {
 
-  const {trips, totalTrips} = await getTrips({pageSize: 3, pageNum: 0});
+  const {trips} = await getTrips({pageSize: 3, pageNum: 0});
 
   return (
     <section className="w-full">

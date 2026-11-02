@@ -54,7 +54,7 @@ public class TripServiceImpl implements TripService{
 
         if (tripFound == null) {
             logger.info("getTrip: Trip with ID {} not found", tripId);
-            throw new NotFoundException("Trip with ID #" + tripId + " found");
+            throw new NotFoundException("Trip with ID #" + tripId + " not found");
         }
 
         // If we use the store route column in the trip table, a linestring is returned
@@ -89,16 +89,12 @@ public class TripServiceImpl implements TripService{
         }
 
         if (pageNum < 0) {
-            throw new IllegalArgumentException("Page number (" + pageNum + ") must be greater than zero");
+            throw new IllegalArgumentException("Page number (" + pageNum + ") must be zero or greater");
         }
 
         final Pageable pageable = PageRequest.of(pageNum, pageSize);
 
         final Page<Trip> tripsFound = tripRepo.findAllByOrderByDateOfTripDesc(pageable);
-
-        if (tripsFound == null || tripsFound.isEmpty()) {
-            throw new NotFoundException("No recent trips found");
-        }
 
         logger.info("getTripSummaries: Found {} recent trips", tripsFound.getNumberOfElements());
 
@@ -112,38 +108,25 @@ public class TripServiceImpl implements TripService{
     public JsonNode getAllTripFeatureRoutes() {
         final List<Trip> trips = tripRepo.findAll();
 
-        if(trips.isEmpty()){
-            throw new NotFoundException("No trips found in database!");
-        }
-
         // Get route data for each trip
         final Set<GeoJsonDistanceElevation> routeStrings = tripRepo.getAllTripRoutes();
 
         final JsonMapper mapper = new JsonMapper();
 
-        final Map<Long,RouteData> routeNodes;
-
         logger.info("getAllTripFeatureRoutes: Found {} routes for {} trips", routeStrings.size(), trips.size());
 
         // Convert the geojson data found into JSON from string, create a new RouteData helper class instance with found data
         // Then add the obj to a hashmap with trip id -> obj for fast access to it
-        try {
-             routeNodes = routeStrings.stream()
+        final Map<Long,RouteData> routeNodes = routeStrings.stream()
                     .map(s -> {
                         try {
                             return new RouteData(mapper.readTree(s.getGeojson()), s.getLengthMi(), s.getElevationFt());
                         } catch (IOException e) {
-                            logger.warn("getAllTripFeaturesRoutes: Error reading json: {}", e.getMessage());
-                            return null;
+                            throw new IllegalStateException("Invalid stored trip route", e);
                         }
                     })
-                    .filter(Objects::nonNull)
                     .collect(Collectors.toMap(rd-> rd.route.get("id").asLong(),
                             rd -> rd));
-        } catch (Exception e) {
-            logger.warn("getAllTripFeaturesRoutes: Error parsing json: {}", e.getMessage());
-            return null;
-        }
 
         // Root node, which is the json node that will be returned
         final ObjectNode rootNode = mapper.createObjectNode();
@@ -182,8 +165,6 @@ public class TripServiceImpl implements TripService{
 
             an.add(tripNode);
 
-            //TODO: REMOVE
-            break;
         }
 
         return rootNode;

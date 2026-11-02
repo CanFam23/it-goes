@@ -13,6 +13,10 @@ export function generateMetadata({ searchParams }) {
 export default async function page(){
   const tripRoutes = await getTripRoutes();
 
+  if (!tripRoutes.features?.length) {
+    return <p className="error-msg">No trip routes to show yet.</p>;
+  }
+
   return (
     <Map routeData={tripRoutes}/>
   );

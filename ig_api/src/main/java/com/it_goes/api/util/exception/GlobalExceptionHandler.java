@@ -4,6 +4,8 @@ import com.it_goes.api.payload.response.MessageResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import software.amazon.awssdk.http.HttpStatusCode;
@@ -37,20 +39,25 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
+    public ResponseEntity<MessageResponse> handleIllegalArgument(IllegalArgumentException ex) {
         logger.warn(ex.getMessage());
-        return ResponseEntity.status(HttpStatusCode.BAD_REQUEST).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatusCode.BAD_REQUEST).body(new MessageResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class})
+    public ResponseEntity<MessageResponse> handleBadParameter(Exception ex) {
+        return ResponseEntity.badRequest().body(new MessageResponse("Invalid or missing request parameter."));
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<String> handleNotFound(NotFoundException ex) {
+    public ResponseEntity<MessageResponse> handleNotFound(NotFoundException ex) {
         logger.warn(ex.getMessage());
-        return ResponseEntity.status(HttpStatusCode.NOT_FOUND).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatusCode.NOT_FOUND).body(new MessageResponse(ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleUnexpected(Exception ex) {
+    public ResponseEntity<MessageResponse> handleUnexpected(Exception ex) {
         logger.warn(ex.getMessage());
-        return ResponseEntity.status(HttpStatusCode.INTERNAL_SERVER_ERROR).body("Something went wrong");
+        return ResponseEntity.status(HttpStatusCode.INTERNAL_SERVER_ERROR).body(new MessageResponse("Something went wrong"));
     }
 }
