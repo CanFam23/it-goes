@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Mail, Copy, Check } from "lucide-react";
+import { requestJson } from "@/lib/requestJson.mjs";
 
 export default function InviteUserSection() {
   const [email, setEmail] = useState("");
@@ -23,17 +24,13 @@ export default function InviteUserSection() {
     setCopied(false);
     setLoading(true);
     try {
-      const response = await fetch("/api/access-codes", {
+      const createdInvite = await requestJson("/api/access-codes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
         credentials: "include",
       });
-      if (!response.ok) {
-        const body = await response.text();
-        throw new Error(body || "Could not generate a code");
-      }
-      setInvite(await response.json());
+      setInvite(createdInvite);
     } catch (err) {
       setError(err.message);
     } finally {

@@ -10,12 +10,14 @@ import com.it_goes.api.jpa.repo.AccessCodeRepository;
 import com.it_goes.api.jpa.repo.SeasonRepository;
 import com.it_goes.api.jpa.repo.UserRepository;
 import com.it_goes.api.util.exception.NotFoundException;
+import com.it_goes.api.util.exception.AccountRequestException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
@@ -271,8 +273,11 @@ public class UserServiceImpl implements UserService{
     @Transactional
     public AccessCode issueAccessCode(String email) {
         final String normalizedEmail = email.strip().toLowerCase();
-        if (!UserService.validateEmail(normalizedEmail) || userRepo.existsByEmail(normalizedEmail)) {
-            throw new IllegalArgumentException("Invalid email or user already exists");
+        if (!UserService.validateEmail(normalizedEmail)) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Enter a valid email address.");
+        }
+        if (userRepo.existsByEmail(normalizedEmail)) {
+            throw new AccountRequestException(HttpStatus.CONFLICT, "An account already exists for this email.");
         }
 
         AccessCode code = accessCodeRepo.findByEmailForUpdate(normalizedEmail).orElse(null);
@@ -280,7 +285,7 @@ public class UserServiceImpl implements UserService{
             code = new AccessCode(normalizedEmail);
         } else {
             if (code.hasBeenUsed()) {
-                throw new IllegalArgumentException("An account already used this invite");
+                throw new AccountRequestException(HttpStatus.CONFLICT, "This email has already used an invite.");
             }
         }
         String candidate;
@@ -295,20 +300,44 @@ public class UserServiceImpl implements UserService{
     @Transactional
     public Optional<User> createUserWithAccessCode(UserDto userDto, String accessCode) {
         if (accessCode == null || accessCode.isBlank() || userDto.email() == null) {
-            return Optional.empty();
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Enter an access code and email address.");
         }
         final String normalizedEmail = userDto.email().strip().toLowerCase();
         final AccessCode code = accessCodeRepo.findByCodeForUpdate(accessCode.strip()).orElse(null);
-        if (code == null || !code.getEmail().equals(normalizedEmail) || code.hasBeenUsed()
-                || !LocalDateTime.now().isBefore(code.getExpiresAt())) {
-            return Optional.empty();
+        if (code == null || !code.getEmail().equals(normalizedEmail)) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "This access code is not valid for that email.");
+        }
+        if (code.hasBeenUsed()) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "This access code has already been used.");
+        }
+        if (!LocalDateTime.now().isBefore(code.getExpiresAt())) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "This access code has expired.");
+        }
+        if (userDto.username() == null || !UserService.validateUsername(userDto.username())) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Username must be 3 to 20 letters or numbers, with no spaces.");
+        }
+        if (!UserService.validatePassword(userDto.password())) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Password does not meet the requirements shown on this form.");
+        }
+        if (userDto.firstName() == null || userDto.firstName().isBlank()
+                || userDto.lastName() == null || userDto.lastName().isBlank()) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Enter your first and last name.");
+        }
+        if (!UserService.validateEmail(normalizedEmail)) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Enter a valid email address.");
+        }
+        if (userRepo.existsByUsername(userDto.username())) {
+            throw new AccountRequestException(HttpStatus.CONFLICT, "Username is already taken.");
+        }
+        if (userRepo.existsByEmail(normalizedEmail)) {
+            throw new AccountRequestException(HttpStatus.CONFLICT, "An account already exists for this email.");
         }
 
         final UserDto normalizedUser = new UserDto(userDto.username(), normalizedEmail, userDto.password(),
                 userDto.firstName(), userDto.lastName(), userDto.profileImage());
         final Optional<User> user = createUser(normalizedUser);
         if (user.isEmpty()) {
-            return Optional.empty();
+            throw new IllegalStateException("Could not create account");
         }
         code.setUsed();
         accessCodeRepo.save(code);

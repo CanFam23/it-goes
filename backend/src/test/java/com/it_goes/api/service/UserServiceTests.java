@@ -678,8 +678,31 @@ public class UserServiceTests {
         when(userRepo.existsByEmail("friend@test.com")).thenReturn(true);
 
         assertThatThrownBy(() -> userService.issueAccessCode("friend@test.com"))
-                .isInstanceOf(IllegalArgumentException.class);
+                .hasMessage("An account already exists for this email.");
         verify(accessCodeRepo, never()).save(any());
+    }
+
+    @Test
+    void issueAccessCode_usedInviteIsRejected() {
+        AccessCode code = new AccessCode("friend@test.com");
+        code.setUsed();
+        when(accessCodeRepo.findByEmailForUpdate("friend@test.com")).thenReturn(Optional.of(code));
+
+        assertThatThrownBy(() -> userService.issueAccessCode("friend@test.com"))
+                .hasMessage("This email has already used an invite.");
+        verify(accessCodeRepo, never()).save(any());
+    }
+
+    @Test
+    void createUserWithAccessCode_registeredEmailCannotConsumeCode() {
+        AccessCode code = new AccessCode("friend@test.com");
+        UserDto dto = new UserDto("friend", "friend@test.com", "Valid123!", "First", "Last", null);
+        when(accessCodeRepo.findByCodeForUpdate(code.getCode())).thenReturn(Optional.of(code));
+        when(userRepo.existsByEmail("friend@test.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> userService.createUserWithAccessCode(dto, code.getCode()))
+                .hasMessage("An account already exists for this email.");
+        assertThat(code.hasBeenUsed()).isFalse();
     }
 
     @Test
@@ -705,9 +728,8 @@ public class UserServiceTests {
         when(accessCodeRepo.findByCodeForUpdate(code.getCode())).thenReturn(Optional.of(code));
         when(userRepo.existsByUsername("friend")).thenReturn(true);
 
-        Optional<User> result = userService.createUserWithAccessCode(dto, code.getCode());
-
-        assertThat(result).isEmpty();
+        assertThatThrownBy(() -> userService.createUserWithAccessCode(dto, code.getCode()))
+                .hasMessage("Username is already taken.");
         assertThat(code.hasBeenUsed()).isFalse();
         verify(accessCodeRepo, never()).save(any());
     }
@@ -718,7 +740,8 @@ public class UserServiceTests {
         UserDto dto = new UserDto("other", "other@test.com", "Valid123!", "First", "Last", null);
         when(accessCodeRepo.findByCodeForUpdate(code.getCode())).thenReturn(Optional.of(code));
 
-        assertThat(userService.createUserWithAccessCode(dto, code.getCode())).isEmpty();
+        assertThatThrownBy(() -> userService.createUserWithAccessCode(dto, code.getCode()))
+                .hasMessage("This access code is not valid for that email.");
         verify(userRepo, never()).save(any());
         assertThat(code.hasBeenUsed()).isFalse();
     }
@@ -730,7 +753,8 @@ public class UserServiceTests {
         UserDto dto = new UserDto("friend", "friend@test.com", "Valid123!", "First", "Last", null);
         when(accessCodeRepo.findByCodeForUpdate(code.getCode())).thenReturn(Optional.of(code));
 
-        assertThat(userService.createUserWithAccessCode(dto, code.getCode())).isEmpty();
+        assertThatThrownBy(() -> userService.createUserWithAccessCode(dto, code.getCode()))
+                .hasMessage("This access code has already been used.");
         verify(userRepo, never()).save(any());
     }
 
@@ -741,7 +765,8 @@ public class UserServiceTests {
         UserDto dto = new UserDto("friend", "friend@test.com", "Valid123!", "First", "Last", null);
         when(accessCodeRepo.findByCodeForUpdate(code.getCode())).thenReturn(Optional.of(code));
 
-        assertThat(userService.createUserWithAccessCode(dto, code.getCode())).isEmpty();
+        assertThatThrownBy(() -> userService.createUserWithAccessCode(dto, code.getCode()))
+                .hasMessage("This access code has expired.");
         verify(userRepo, never()).save(any());
     }
 }

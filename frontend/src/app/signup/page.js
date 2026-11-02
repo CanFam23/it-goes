@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Eye, EyeOff, X, Check } from "lucide-react";
+import { requestJson } from "@/lib/requestJson.mjs";
 
 export default function SignupPage() {
   const router = useRouter();
   const minTextLength = 1;
   const maxTextLength = 30;
 
-  const minUsernameLength = 4;
+  const minUsernameLength = 3;
   const maxUsernameLength = 20;
 
   const [showPassword, setShowPassword] = useState(false);
@@ -46,7 +47,7 @@ export default function SignupPage() {
 
     try {
       // API route
-      const res = await fetch(`/api/auth/signup`, {
+      await requestJson(`/api/auth/signup`, {
         method: "POST",
         body: JSON.stringify(data),
         headers: {
@@ -56,16 +57,9 @@ export default function SignupPage() {
         credentials: "include"
       });
 
-      const resData = await res.json();
-
-      if (!res.ok) {
-        setError(resData.message ? resData.message : "Error, please try again");
-        return;
-      }
-
       router.push("/login?registered=1");
     } catch (err) {
-      setError(err.message || "Error, please try again");
+      setError(err.message);
     } finally {
       setIsLoading(false); // Set loading to false when the request completes
     }

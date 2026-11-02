@@ -101,7 +101,7 @@ public class AuthController {
 
         if (!signUpRequest.getPassword().equals(signUpRequest.getConfirmPassword())) {
             logger.warn("registerUser: Passwords do not match");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Passwords do not match"));
+            return ResponseEntity.badRequest().body(new MessageResponse("Passwords do not match."));
         }
 
         final User newUser = userService.createUserWithAccessCode(new UserDto(
@@ -115,7 +115,8 @@ public class AuthController {
 
         if (newUser == null) {
             logger.warn("registerUser: Failed to create user");
-            return ResponseEntity.badRequest().body(new MessageResponse("Invalid access code or signup details"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Could not create your account. Please try again."));
         }
 
         logger.info("registerUser: Created new user with id #{}", newUser.getId());
