@@ -17,10 +17,12 @@ export async function getCurrentUser() {
   }
 
   try {
-    const response = await fetch('http://localhost:8080/api/auth/protected', {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
+    const response = await fetch(`${backendUrl}/api/auth/protected`, {
       headers: {
-        'Cookie': token.value
-      }
+        'Cookie': `token=${token.value}`
+      },
+      cache: 'no-store'
     });
     
     if (response.ok) {

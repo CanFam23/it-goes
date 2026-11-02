@@ -645,4 +645,103 @@ public class UserServiceTests {
         assertThat(result).isFalse();
         verify(accessCodeRepo, times(1)).findByCode("ABC12345");
     }
+
+    @Test
+    void issueAccessCode_createsCodeForNewEmail() {
+        when(accessCodeRepo.findByEmailForUpdate("friend@test.com")).thenReturn(Optional.empty());
+        when(accessCodeRepo.save(any(AccessCode.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AccessCode code = userService.issueAccessCode("  FRIEND@test.com  ");
+
+        assertThat(code.getEmail()).isEqualTo("friend@test.com");
+        assertThat(code.getCode()).hasSize(8);
+        assertThat(code.getExpiresAt()).isAfter(LocalDateTime.now());
+        verify(accessCodeRepo).save(code);
+    }
+
+    @Test
+    void issueAccessCode_replacesExistingCode() {
+        AccessCode existing = new AccessCode("friend@test.com");
+        String oldCode = existing.getCode();
+        when(accessCodeRepo.findByEmailForUpdate("friend@test.com")).thenReturn(Optional.of(existing));
+        when(accessCodeRepo.save(any(AccessCode.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AccessCode code = userService.issueAccessCode("friend@test.com");
+
+        assertThat(code.getCode()).isNotEqualTo(oldCode);
+        verify(accessCodeRepo).save(existing);
+        verify(accessCodeRepo).existsByCode(code.getCode());
+    }
+
+    @Test
+    void issueAccessCode_registeredEmailIsRejected() {
+        when(userRepo.existsByEmail("friend@test.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> userService.issueAccessCode("friend@test.com"))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(accessCodeRepo, never()).save(any());
+    }
+
+    @Test
+    void createUserWithAccessCode_validCodeCreatesUserAndConsumesCode() {
+        AccessCode code = new AccessCode("friend@test.com");
+        UserDto dto = new UserDto("friend", "friend@test.com", "Valid123!", "First", "Last", null);
+        User saved = new User("friend", "friend@test.com", "ENCODED", "First", "Last", null);
+        when(accessCodeRepo.findByCodeForUpdate(code.getCode())).thenReturn(Optional.of(code));
+        when(passwordEncoder.encode("Valid123!")).thenReturn("ENCODED");
+        when(userRepo.save(any(User.class))).thenReturn(saved);
+
+        Optional<User> result = userService.createUserWithAccessCode(dto, code.getCode());
+
+        assertThat(result).contains(saved);
+        assertThat(code.hasBeenUsed()).isTrue();
+        verify(accessCodeRepo).save(code);
+    }
+
+    @Test
+    void createUserWithAccessCode_failedUserCreationKeepsCodeUsable() {
+        AccessCode code = new AccessCode("friend@test.com");
+        UserDto dto = new UserDto("friend", "friend@test.com", "Valid123!", "First", "Last", null);
+        when(accessCodeRepo.findByCodeForUpdate(code.getCode())).thenReturn(Optional.of(code));
+        when(userRepo.existsByUsername("friend")).thenReturn(true);
+
+        Optional<User> result = userService.createUserWithAccessCode(dto, code.getCode());
+
+        assertThat(result).isEmpty();
+        assertThat(code.hasBeenUsed()).isFalse();
+        verify(accessCodeRepo, never()).save(any());
+    }
+
+    @Test
+    void createUserWithAccessCode_wrongEmailCannotCreateUser() {
+        AccessCode code = new AccessCode("friend@test.com");
+        UserDto dto = new UserDto("other", "other@test.com", "Valid123!", "First", "Last", null);
+        when(accessCodeRepo.findByCodeForUpdate(code.getCode())).thenReturn(Optional.of(code));
+
+        assertThat(userService.createUserWithAccessCode(dto, code.getCode())).isEmpty();
+        verify(userRepo, never()).save(any());
+        assertThat(code.hasBeenUsed()).isFalse();
+    }
+
+    @Test
+    void createUserWithAccessCode_usedCodeCannotCreateUser() {
+        AccessCode code = new AccessCode("friend@test.com");
+        code.setUsed();
+        UserDto dto = new UserDto("friend", "friend@test.com", "Valid123!", "First", "Last", null);
+        when(accessCodeRepo.findByCodeForUpdate(code.getCode())).thenReturn(Optional.of(code));
+
+        assertThat(userService.createUserWithAccessCode(dto, code.getCode())).isEmpty();
+        verify(userRepo, never()).save(any());
+    }
+
+    @Test
+    void createUserWithAccessCode_expiredCodeCannotCreateUser() {
+        AccessCode code = new AccessCode("friend@test.com");
+        ReflectionTestUtils.setField(code, "expiresAt", LocalDateTime.now().minusMinutes(1));
+        UserDto dto = new UserDto("friend", "friend@test.com", "Valid123!", "First", "Last", null);
+        when(accessCodeRepo.findByCodeForUpdate(code.getCode())).thenReturn(Optional.of(code));
+
+        assertThat(userService.createUserWithAccessCode(dto, code.getCode())).isEmpty();
+        verify(userRepo, never()).save(any());
+    }
 }

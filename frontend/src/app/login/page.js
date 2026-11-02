@@ -1,17 +1,22 @@
 "use client";
 
-import Link from "next/Link";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Eye, EyeOff } from "lucide-react";
 
-export default function page() {
+export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [registered, setRegistered] = useState(false);
+
+  useEffect(() => {
+    setRegistered(new URLSearchParams(window.location.search).get("registered") === "1");
+  }, []);
 
   const router = useRouter();
 
@@ -42,31 +47,29 @@ export default function page() {
         return;
       }
 
-      localStorage.setItem("username", res.username || "Unknown username");
+      localStorage.setItem("username", resData.username || "Unknown username");
       localStorage.setItem("name", resData.firstName || "User");
 
       router.push("/");
       router.refresh();
     } catch (err) {
-      setError(error.message);
+      setError(err.message || "Error, please try again");
     } finally {
       setIsLoading(false); // Set loading to false when the request completes
     }
   }
 
   return (
-    <section
-      onSubmit={onSubmit}
-      className="flex flex-col bg-background w-fit rounded-xl p-10 pb-0 items-center mx-auto"
-    >
+    <section className="flex flex-col bg-background w-fit rounded-xl p-10 pb-0 items-center mx-auto">
       <h1 className="text-2xl font-bold">Log In</h1>
+      {registered && <p role="status">Account created. Log in to continue.</p>}
       <p className="text-sm">
         Have an access code?
         <Link href="/signup" className="hover:underline p-1">
           Sign up here
         </Link>
       </p>
-      <form className="flex flex-col p-2 m-10 mb-0">
+      <form className="flex flex-col p-2 m-10 mb-0" onSubmit={onSubmit}>
         <label htmlFor="id" required>
           Username
         </label>

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Eye, EyeOff, X, Check } from "lucide-react";
 
-export default function page() {
+export default function SignupPage() {
+  const router = useRouter();
   const minTextLength = 1;
   const maxTextLength = 30;
 
@@ -42,8 +44,6 @@ export default function page() {
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries()); // Convert to object
 
-    console.log(data);
-
     try {
       // API route
       const res = await fetch(`/api/auth/signup`, {
@@ -52,7 +52,7 @@ export default function page() {
         headers: {
           "Content-Type": "application/json",
         },
-        cache: "force-cache",
+        cache: "no-store",
         credentials: "include"
       });
 
@@ -63,13 +63,9 @@ export default function page() {
         return;
       }
 
-      localStorage.setItem("username", res.username || "Unknown username");
-      localStorage.setItem("name", resData.firstName || "User");
-
-      router.push("/");
-      router.refresh();
+      router.push("/login?registered=1");
     } catch (err) {
-      setError(error.message);
+      setError(err.message || "Error, please try again");
     } finally {
       setIsLoading(false); // Set loading to false when the request completes
     }
@@ -199,10 +195,10 @@ export default function page() {
 
         <div className="flex flex-col">
           <div className="flex flex-row mt-4">
-            <label htmlFor="password">Confirm Password</label>
+            <label htmlFor="confirmPassword">Confirm Password</label>
             <p
               className="text-xs hover:cursor-pointer hover:underline"
-              onClick={() => setShowConfirmPassword(!showPassword)}
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             >
               {showConfirmPassword ? (
                 <EyeOff strokeWidth={1.6} />
@@ -212,8 +208,8 @@ export default function page() {
             </p>
           </div>
           <input
-            type={showPassword ? "text" : "password"}
-            id="password"
+            type={showConfirmPassword ? "text" : "password"}
+            id="confirmPassword"
             name="confirmPassword"
             className="bg-white border-2 rounded-lg p-1"
             value={confirmPassword}
@@ -232,7 +228,7 @@ export default function page() {
               ) : (
                 <>
                   <X size={16} className="text-red-600" />
-                  <span className="text-red-600">Passwords don't match</span>
+                  <span className="text-red-600">Passwords don&apos;t match</span>
                 </>
               )}
             </div>

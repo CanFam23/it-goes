@@ -9,7 +9,6 @@ import com.it_goes.api.payload.request.SignupRequest;
 import com.it_goes.api.payload.response.UserDataResponse;
 import com.it_goes.api.payload.response.MessageResponse;
 import com.it_goes.api.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -24,6 +23,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -99,28 +99,23 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 
-        if (!userService.validateAccessCode(signUpRequest.getAccessCode(), signUpRequest.getEmail())){
-            logger.warn("registerUser: Invalid access code given");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid access code"));
-        }
-
         if (!signUpRequest.getPassword().equals(signUpRequest.getConfirmPassword())) {
             logger.warn("registerUser: Passwords do not match");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Passwords do not match"));
         }
 
-        final User newUser = userService.createUser(new UserDto(
+        final User newUser = userService.createUserWithAccessCode(new UserDto(
                 signUpRequest.getUsername(),
                 signUpRequest.getEmail(),
                 signUpRequest.getPassword(),
                 signUpRequest.getFirstName(),
                 signUpRequest.getLastName(),
                 null // TODO Need to handle saving images, prob in service
-        )).orElse(null);
+        ), signUpRequest.getAccessCode()).orElse(null);
 
         if (newUser == null) {
             logger.warn("registerUser: Failed to create user");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Failed to create user"));
+            return ResponseEntity.badRequest().body(new MessageResponse("Invalid access code or signup details"));
         }
 
         logger.info("registerUser: Created new user with id #{}", newUser.getId());
@@ -129,15 +124,9 @@ public class AuthController {
     }
 
     @GetMapping("/protected")
-    public ResponseEntity<?> protectedEndpoint(HttpServletRequest request) {
-        final String token = request.getHeader("Cookie");
-        logger.info("Token: {}", token);
-
-        if (jwtUtils.validateJwtToken(token)) {
-            final String username = jwtUtils.getUserNameFromJwtToken(token);
-
-            final User foundUser = userService.getUserByUsername(username);
-
+    public ResponseEntity<?> protectedEndpoint(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        if (userDetails != null) {
+            final User foundUser = userDetails.getUser();
             return ResponseEntity.ok(new UserDataResponse(
                     foundUser.getUsername(),
                     foundUser.getEmail(),

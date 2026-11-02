@@ -2,6 +2,7 @@ package com.it_goes.api.service;
 
 import com.it_goes.api.dto.UserDto;
 import com.it_goes.api.jpa.model.User;
+import com.it_goes.api.jpa.model.AccessCode;
 import com.it_goes.api.jpa.projection.FirstNameDaysLocationYear;
 import com.it_goes.api.jpa.projection.FirstNameDaysYear;
 import com.it_goes.api.util.exception.NotFoundException;
@@ -133,4 +134,8 @@ public interface UserService {
      * @return {@code true} if the code is valid, {@code false} otherwise.
      */
     boolean validateAccessCode(@NotBlank String accessCode, @NotBlank String email);
+
+    AccessCode issueAccessCode(String email);
+
+    Optional<User> createUserWithAccessCode(UserDto userDto, String accessCode);
 }

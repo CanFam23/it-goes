@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.security.SecureRandom;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -19,14 +20,15 @@ public class AccessCode {
     private static final int CODE_VALID_DAYS = 7;
 
     private static final int CODE_LENGTH = 8;
+    private static final SecureRandom RANDOM = new SecureRandom();
 
-    private static String generateCode(){
+    public static String generateCode(){
         final String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
         final StringBuilder code = new StringBuilder();
 
         for (int i = 0; i < CODE_LENGTH; i++) {
-            int index = (int) (Math.random() * characters.length());
+            int index = RANDOM.nextInt(characters.length());
             code.append(characters.charAt(index));
         }
 
@@ -35,11 +37,16 @@ public class AccessCode {
 
     public AccessCode(String email) {
         this.email = email;
-
-        this.expiresAt = LocalDateTime.now().plusDays(CODE_VALID_DAYS);
-
         this.code = generateCode();
-        this.used = false;
+        this.expiresAt = LocalDateTime.now().plusDays(CODE_VALID_DAYS);
+    }
+
+    public void renew(String replacement) {
+        if (used) {
+            throw new IllegalStateException("Access code is already used");
+        }
+        code = replacement;
+        expiresAt = LocalDateTime.now().plusDays(CODE_VALID_DAYS);
     }
 
     @Id

@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -264,5 +265,53 @@ public class UserServiceImpl implements UserService{
         }
 
         return true;
+    }
+
+    @Override
+    @Transactional
+    public AccessCode issueAccessCode(String email) {
+        final String normalizedEmail = email.strip().toLowerCase();
+        if (!UserService.validateEmail(normalizedEmail) || userRepo.existsByEmail(normalizedEmail)) {
+            throw new IllegalArgumentException("Invalid email or user already exists");
+        }
+
+        AccessCode code = accessCodeRepo.findByEmailForUpdate(normalizedEmail).orElse(null);
+        if (code == null) {
+            code = new AccessCode(normalizedEmail);
+        } else {
+            if (code.hasBeenUsed()) {
+                throw new IllegalArgumentException("An account already used this invite");
+            }
+        }
+        String candidate;
+        do {
+            candidate = AccessCode.generateCode();
+        } while (candidate.equals(code.getCode()) || accessCodeRepo.existsByCode(candidate));
+        code.renew(candidate);
+        return accessCodeRepo.save(code);
+    }
+
+    @Override
+    @Transactional
+    public Optional<User> createUserWithAccessCode(UserDto userDto, String accessCode) {
+        if (accessCode == null || accessCode.isBlank() || userDto.email() == null) {
+            return Optional.empty();
+        }
+        final String normalizedEmail = userDto.email().strip().toLowerCase();
+        final AccessCode code = accessCodeRepo.findByCodeForUpdate(accessCode.strip()).orElse(null);
+        if (code == null || !code.getEmail().equals(normalizedEmail) || code.hasBeenUsed()
+                || !LocalDateTime.now().isBefore(code.getExpiresAt())) {
+            return Optional.empty();
+        }
+
+        final UserDto normalizedUser = new UserDto(userDto.username(), normalizedEmail, userDto.password(),
+                userDto.firstName(), userDto.lastName(), userDto.profileImage());
+        final Optional<User> user = createUser(normalizedUser);
+        if (user.isEmpty()) {
+            return Optional.empty();
+        }
+        code.setUsed();
+        accessCodeRepo.save(code);
+        return user;
     }
 }
