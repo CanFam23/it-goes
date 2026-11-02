@@ -1,5 +1,6 @@
 import Map from "@/components/Map";
 import {getTripRoutes} from "@/lib/getTripRoutes";
+import ErrorMessage from "@/components/ErrorMessage";
 
 import {metadata} from "@/app/layout";
 
@@ -11,7 +12,12 @@ export function generateMetadata({ searchParams }) {
 }
 
 export default async function page(){
-  const tripRoutes = await getTripRoutes();
+  let tripRoutes;
+  try {
+    tripRoutes = await getTripRoutes();
+  } catch {
+    return <ErrorMessage message="Unable to load trip routes. Please try again shortly." />;
+  }
 
   if (!tripRoutes.features?.length) {
     return <p className="error-msg">No trip routes to show yet.</p>;

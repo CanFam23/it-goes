@@ -5,6 +5,7 @@ import Title from "@/components/Title";
 import DaysSkiedChart from "@/components/DaysSkiedChart";
 import {getDaysSkied} from "@/lib/getDaysSkied";
 import DaysSkiedTotal from "@/components/DaysSkiedTotal";
+import ErrorMessage from "@/components/ErrorMessage";
 
 import {metadata} from "@/app/layout";
 
@@ -20,13 +21,17 @@ export default async function Page({ searchParams }) {
   const pageSize = searchParam.pageSize ? (searchParam.pageSize): 5;
   const page = searchParam.page ? (searchParam.page) : 0;
 
-  const {trips, totalPages} = await getTrips({pageSize: pageSize, pageNum: page});
-
   const year = 2024;
-
-  const daysSkiedLocation = await getDaysSkied("getDaysSkiedLocation",year);
-
-  const daysSkied = await getDaysSkied("getDaysSkied",year);
+  let trips, totalPages, daysSkiedLocation, daysSkied;
+  try {
+    [{trips, totalPages}, daysSkiedLocation, daysSkied] = await Promise.all([
+      getTrips({pageSize, pageNum: page}),
+      getDaysSkied("getDaysSkiedLocation", year),
+      getDaysSkied("getDaysSkied", year),
+    ]);
+  } catch {
+    return <ErrorMessage message="Unable to load trips or stats. Please try again shortly." />;
+  }
 
   return (
     <section className="w-full">

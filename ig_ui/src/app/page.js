@@ -3,10 +3,16 @@ import Trips from "@/components/Trips";
 import { getTrips } from "@/lib/getTrips";
 import Link from "next/link";
 import Title from "@/components/Title";
+import ErrorMessage from "@/components/ErrorMessage";
 
 export default async function Home() {
 
-  const {trips} = await getTrips({pageSize: 3, pageNum: 0});
+  let trips;
+  try {
+    ({trips} = await getTrips({pageSize: 3, pageNum: 0}));
+  } catch {
+    return <ErrorMessage message="Unable to load recent trips. Please try again shortly." />;
+  }
 
   return (
     <section className="w-full">
