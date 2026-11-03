@@ -10,7 +10,7 @@ import StyleControl from "@/mapbox/StyleControl";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
-export default function Map({routeData}) {
+export default function Map({routeData, fitRoute = false}) {
   const mapContainerRef = useRef();
   const mapRef = useRef();
 
@@ -54,6 +54,11 @@ export default function Map({routeData}) {
     }
 
     mapRef.current.on('load', () => {
+      if (fitRoute) {
+        const bounds = new mapboxgl.LngLatBounds();
+        routeData.features[0].geometry.coordinates.forEach((point) => bounds.extend(point.slice(0, 2)));
+        mapRef.current.fitBounds(bounds, { padding: 40, maxZoom: 12 });
+      }
 
       // Satellite layer, starts off hidden
       mapRef.current.addLayer({
@@ -181,9 +186,9 @@ export default function Map({routeData}) {
           <p class="pr-2">${e.feature.properties.locationName}</p>
           <p class="pl-2 bg-background">${e.feature.properties.date}</p>
         </div>
-        <p>${e.feature.properties.distance.toFixed(2)} miles</p>
-        <p>${e.feature.properties.elevation.toFixed(2)} ft elevation gain</p>
-        <a href="" class="hover:underline"><strong>View Post</strong></a>
+        ${Number.isFinite(e.feature.properties.distance) ? `<p>${e.feature.properties.distance.toFixed(2)} miles</p>` : ""}
+        ${Number.isFinite(e.feature.properties.elevation) ? `<p>${e.feature.properties.elevation.toFixed(2)} ft elevation gain</p>` : ""}
+        <a href="/trips/${Number(e.feature.properties.id)}" class="hover:underline"><strong>View Post</strong></a>
         </div>
         `;
 
@@ -213,7 +218,7 @@ export default function Map({routeData}) {
     });
 
     return () => mapRef.current.remove();
-  });
+  }, [routeData, fitRoute]);
 
   return (
     <div

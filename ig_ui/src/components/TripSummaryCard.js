@@ -36,7 +36,7 @@ export default function TripSummaryCard({trip}) {
         className="text-[0.5rem] sm:text-sm md:text-lg line-clamp-4 md:line-clamp-6"
         >{trip.desc}</p>
         <Link
-          href=""
+          href={`/trips/${trip.id}`}
           className="text-text-btn bg-bg-btn
           text-[0.5rem] sm:text-sm md:text-lg
           font-bold border-border-btn

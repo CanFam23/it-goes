@@ -5,7 +5,7 @@ These existing paths are under the Spring context path `/api`. Anonymous GET req
 | Request | Successful response shape |
 | --- | --- |
 | `GET /api/getTrips?pageSize=3&pageNum=0` | `{"trips":[{"id":1,"title":"...","desc":"...","locationName":"...","stateCountry":"...","dateOfTrip":"2025-01-01","imageURL":"..."}],"numPages":1}` |
-| `GET /api/getTrip?id=1` | One trip detail object; see `TripDto` for fields. |
+| `GET /api/getTrip?id=1` | `{"id":1,"title":"...","desc":"...","locationName":"...","stateCountry":"...","dateOfTrip":"2025-01-01","datePosted":"2025-01-02","dateUpdated":"2025-01-02","authorUsername":"nick","peopleInvolved":["friend"],"route":null,"location":[-111.4,45.3],"imageURL":"..."}`. `route` is a GeoJSON LineString when present. |
 | `GET /api/getAllTripFeatureRoutes` | `{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"id":1,"title":"...","date":"2025-01-01","locationName":"...","distance":1.2,"elevation":500},"geometry":{"type":"LineString","coordinates":[[-111.4,45.3]]}}]}` |
 | `GET /api/getDaysSkied?year=2024` | `[ {"firstName":"...","daysSkied":2,"year":2024} ]` |
 | `GET /api/getDaysSkiedLocation?year=2024` | `[ {"firstName":"...","daysSkied":2,"location":"...","year":2024} ]` |
