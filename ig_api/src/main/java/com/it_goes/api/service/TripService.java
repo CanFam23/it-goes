@@ -49,7 +49,8 @@ public interface TripService {
                 trip.getDatePosted(), trip.getDateUpdated(),
                 trip.getAuthor().getUsername(),
                 trip.getUsers().stream().map(User::getUsername).toArray(String[]::new), route,
-                new double[]{trip.getLocation().getLocation().getX(), trip.getLocation().getLocation().getY()});
+                new double[]{trip.getLocation().getLocation().getX(), trip.getLocation().getLocation().getY()},
+                ImageService.buildImageUrl(trip.getCoverImageKey()));
     }
 
     /**

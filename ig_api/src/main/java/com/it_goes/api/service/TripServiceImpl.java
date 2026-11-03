@@ -65,7 +65,7 @@ public class TripServiceImpl implements TripService{
 
         // Try to parse the string route into a json node.
         try {
-            final JsonNode routeJson = mapper.readTree(route);
+            final JsonNode routeJson = route.isBlank() ? null : mapper.readTree(route);
 
             logger.info("getTrip: Trip with ID {} found", tripId);
             return TripService.toTripDto(tripFound, routeJson);

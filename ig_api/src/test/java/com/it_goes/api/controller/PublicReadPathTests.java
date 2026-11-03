@@ -5,6 +5,7 @@ import com.it_goes.api.config.security.jwt.AuthEntryPointJwt;
 import com.it_goes.api.config.security.jwt.JwtUtils;
 import com.it_goes.api.config.security.user.UserDetailsServiceImpl;
 import com.it_goes.api.service.TripService;
+import com.it_goes.api.dto.TripDto;
 import com.it_goes.api.service.UserService;
 import com.it_goes.api.util.exception.GlobalExceptionHandler;
 import com.it_goes.api.util.exception.NotFoundException;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.time.LocalDate;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -50,6 +52,21 @@ class PublicReadPathTests {
     }
 
     @Test
+    void anonymousTripDetailIncludesCoverAndNullableRoute() throws Exception {
+        when(tripService.getTrip(7L)).thenReturn(new TripDto(
+                7L, "A trip", "A good day", "Big Sky", "Montana",
+                LocalDate.of(2025, 1, 1), null, null, "author",
+                new String[]{"friend"}, null, new double[]{-111.4, 45.3},
+                "https://example.com/cover.jpg"));
+
+        mvc.perform(get("/getTrip?id=7"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(7))
+                .andExpect(jsonPath("$.imageURL").value("https://example.com/cover.jpg"))
+                .andExpect(jsonPath("$.route").value(org.hamcrest.Matchers.nullValue()));
+    }
+
+    @Test
     void anonymousCannotWriteInvites() throws Exception {
         mvc.perform(post("/access-codes").contentType("application/json")
                 .content("{\"email\":\"friend@example.com\"}"))
@@ -68,5 +85,7 @@ class PublicReadPathTests {
         mvc.perform(get("/getTrip?id=999"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Trip with ID #999 not found"));
+        mvc.perform(get("/getTrip?id=invalid"))
+                .andExpect(status().isBadRequest());
     }
 }

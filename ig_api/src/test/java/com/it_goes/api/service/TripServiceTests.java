@@ -240,6 +240,7 @@ public class TripServiceTests {
     void toTripDto_validTripAndRoute() {
         final Trip trip = new Trip("Title", user, location, LocalDate.of(2025, 1, 1));
         trip.setDescription("abc");
+        trip.setCoverImageKey("covers/trip.jpg");
         trip.setDatePosted(LocalDate.of(2025, 1, 2));
         trip.setDateUpdated(LocalDate.of(2025, 1, 3));
 
@@ -264,6 +265,7 @@ public class TripServiceTests {
         assertThat(dto.peopleInvolved()).containsExactlyInAnyOrder("alice", "bob");
 
         assertThat(dto.route()).isSameAs(route);
+        assertThat(dto.imageURL()).isEqualTo(ImageService.buildImageUrl("covers/trip.jpg"));
 
         assertThat(dto.location()).containsExactly(
                 location.getLocation().getX(),  // lon
