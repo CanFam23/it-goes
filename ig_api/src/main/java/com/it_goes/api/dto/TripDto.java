@@ -9,5 +9,5 @@ public record TripDto(Long id, String title, String desc,
                       String locationName, String stateCountry, 
                       LocalDate dateOfTrip, LocalDate datePosted, LocalDate dateUpdated,
                       String authorUsername, String[] peopleInvolved, JsonNode route, double[] location,
-                      String imageURL) {
+                      String imageURL, String authorName, String[] companionNames) {
 }

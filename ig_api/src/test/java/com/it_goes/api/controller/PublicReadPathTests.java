@@ -57,12 +57,14 @@ class PublicReadPathTests {
                 7L, "A trip", "A good day", "Big Sky", "Montana",
                 LocalDate.of(2025, 1, 1), null, null, "author",
                 new String[]{"friend"}, null, new double[]{-111.4, 45.3},
-                "https://example.com/cover.jpg"));
+                "https://example.com/cover.jpg", "Author Name", new String[]{"Friend Name"}));
 
         mvc.perform(get("/getTrip?id=7"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(7))
                 .andExpect(jsonPath("$.imageURL").value("https://example.com/cover.jpg"))
+                .andExpect(jsonPath("$.authorName").value("Author Name"))
+                .andExpect(jsonPath("$.companionNames[0]").value("Friend Name"))
                 .andExpect(jsonPath("$.route").value(org.hamcrest.Matchers.nullValue()));
     }
 

@@ -249,6 +249,7 @@ public class TripServiceTests {
 
         trip.addUser(u2);
         trip.addUser(u3);
+        trip.addUser(user);
 
         final JsonNode route = mock(JsonNode.class);
 
@@ -262,7 +263,9 @@ public class TripServiceTests {
         assertThat(dto.dateUpdated()).isEqualTo(LocalDate.of(2025,1,3));
 
         assertThat(dto.authorUsername()).isEqualTo(user.getUsername());
-        assertThat(dto.peopleInvolved()).containsExactlyInAnyOrder("alice", "bob");
+        assertThat(dto.peopleInvolved()).containsExactlyInAnyOrder("alice", "bob", "test");
+        assertThat(dto.authorName()).isEqualTo("john doe");
+        assertThat(dto.companionNames()).containsExactlyInAnyOrder("a b", "c d");
 
         assertThat(dto.route()).isSameAs(route);
         assertThat(dto.imageURL()).isEqualTo(ImageService.buildImageUrl("covers/trip.jpg"));

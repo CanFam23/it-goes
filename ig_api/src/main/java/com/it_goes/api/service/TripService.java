@@ -50,7 +50,13 @@ public interface TripService {
                 trip.getAuthor().getUsername(),
                 trip.getUsers().stream().map(User::getUsername).toArray(String[]::new), route,
                 new double[]{trip.getLocation().getLocation().getX(), trip.getLocation().getLocation().getY()},
-                ImageService.buildImageUrl(trip.getCoverImageKey()));
+                ImageService.buildImageUrl(trip.getCoverImageKey()),
+                trip.getAuthor().getFirstName() + " " + trip.getAuthor().getLastName(),
+                trip.getUsers().stream()
+                        .filter(user -> !user.getUsername().equals(trip.getAuthor().getUsername()))
+                        .map(user -> user.getFirstName() + " " + user.getLastName())
+                        .sorted()
+                        .toArray(String[]::new));
     }
 
     /**
