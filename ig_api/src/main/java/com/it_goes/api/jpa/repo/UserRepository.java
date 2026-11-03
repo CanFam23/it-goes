@@ -30,12 +30,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return List of {@link FirstNameDaysYear} projections with the numbers of days skied and the first name of the user, and the year found in the start
      */
     @Query(value = """
+     WITH trip_people AS (
+       SELECT trip_id, user_id FROM trip_users
+       UNION
+       SELECT id AS trip_id, author_id AS user_id FROM trip WHERE author_id IS NOT NULL
+     )
      SELECT u.first_name, COUNT(*) AS days_skied,
      :start AS startDate,
      EXTRACT(YEAR FROM CAST(:start AS DATE)) AS year
-     FROM trip_users
-     JOIN trip as t ON trip_users.trip_id = t.id
-     JOIN it_goes_user as u ON trip_users.user_id = u.id
+     FROM trip_people AS tp
+     JOIN trip AS t ON tp.trip_id = t.id
+     JOIN it_goes_user AS u ON tp.user_id = u.id
      WHERE t.date_of_trip >= :start and t.date_of_trip <= :end
      GROUP BY u.id,u.first_name;
     """, nativeQuery = true)
@@ -46,11 +51,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return List of {@link FirstNameDaysYear} projections with the numbers of days skied, the first name of the user, and the year
      */
     @Query(value = """
+     WITH trip_people AS (
+       SELECT trip_id, user_id FROM trip_users
+       UNION
+       SELECT id AS trip_id, author_id AS user_id FROM trip WHERE author_id IS NOT NULL
+     )
      SELECT u.first_name, COUNT(*) AS days_skied, EXTRACT(year FROM s.start_date) as year
-     FROM trip_users
-     JOIN trip as t ON trip_users.trip_id = t.id
-     JOIN it_goes_user as u ON trip_users.user_id = u.id
-     JOIN season as s ON t.season_id = s.id
+     FROM trip_people AS tp
+     JOIN trip AS t ON tp.trip_id = t.id
+     JOIN it_goes_user AS u ON tp.user_id = u.id
+     JOIN season AS s ON t.season_id = s.id
      GROUP BY u.id,u.first_name, s.start_date;
     """, nativeQuery = true)
     List<FirstNameDaysYear> getDaysSkied();
@@ -63,12 +73,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * the location of each trip, the year found in the start variable given
      */
     @Query(value = """
+      WITH trip_people AS (
+        SELECT trip_id, user_id FROM trip_users
+        UNION
+        SELECT id AS trip_id, author_id AS user_id FROM trip WHERE author_id IS NOT NULL
+      )
       SELECT u.first_name, l.name AS location, COUNT(*) AS days_skied,
       :start AS startDate,
       EXTRACT(YEAR FROM CAST(:start AS DATE)) AS year
-      FROM trip_users
-      JOIN trip AS t ON trip_users.trip_id = t.id
-      JOIN it_goes_user AS u ON trip_users.user_id = u.id
+      FROM trip_people AS tp
+      JOIN trip AS t ON tp.trip_id = t.id
+      JOIN it_goes_user AS u ON tp.user_id = u.id
       JOIN location AS l on t.location_id = l.id
       JOIN season as s ON t.season_id = s.id
       WHERE t.date_of_trip >= :start and t.date_of_trip <= :end
@@ -82,10 +97,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * the location of each trip, the year found in the start variable given
      */
     @Query(value = """
+      WITH trip_people AS (
+        SELECT trip_id, user_id FROM trip_users
+        UNION
+        SELECT id AS trip_id, author_id AS user_id FROM trip WHERE author_id IS NOT NULL
+      )
       SELECT u.first_name, l.name AS location, COUNT(*) AS days_skied,
-      FROM trip_users
-      JOIN trip AS t ON trip_users.trip_id = t.id
-      JOIN it_goes_user AS u ON trip_users.user_id = u.id
+             EXTRACT(YEAR FROM s.start_date) AS year
+      FROM trip_people AS tp
+      JOIN trip AS t ON tp.trip_id = t.id
+      JOIN it_goes_user AS u ON tp.user_id = u.id
       JOIN location AS l on t.location_id = l.id
       JOIN season as s ON t.season_id = s.id
       GROUP BY u.id,u.first_name,l.name, s.start_date;

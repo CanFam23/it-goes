@@ -3,6 +3,7 @@ package com.it_goes.api.jpa.model;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -130,6 +131,10 @@ public class Trip {
     }
 
     public boolean addUser(User user){
+        if (user == null || (author != null && Objects.equals(author.getUsername(), user.getUsername()))
+                || users.stream().anyMatch(existing -> Objects.equals(existing.getUsername(), user.getUsername()))) {
+            return false;
+        }
         return users.add(user);
     }
 

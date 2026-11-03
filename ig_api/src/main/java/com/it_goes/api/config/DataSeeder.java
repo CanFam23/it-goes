@@ -79,8 +79,8 @@ public class DataSeeder {
             t.setCoverImageKey("images/DSC02993.jpg");
 
             newUser.addTripPosted(t);
-            newUser2.addTrip(t);
-            newUser3.addTrip(t);
+            t.addUser(newUser2);
+            t.addUser(newUser3);
 
             tr.save(t);
 
@@ -92,8 +92,8 @@ public class DataSeeder {
             t.setCoverImageKey("images/DSC02993.jpg");
 
             newUser.addTripPosted(t);
-            newUser2.addTrip(t);
-            newUser3.addTrip(t);
+            t.addUser(newUser2);
+            t.addUser(newUser3);
 
             tr.save(t);
         }

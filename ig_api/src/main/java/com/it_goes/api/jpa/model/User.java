@@ -124,16 +124,10 @@ public class User {
     }
 
     public boolean addTrip(Trip trip){
-        if (trip == null) return false;
+        if (trip == null || trips.contains(trip) || !trip.addUser(this)) return false;
 
-        if (trips.add(trip) && trip.addUser(this)){
-            trip.setAuthor(this);
-            return true;
-        }
-        // Reset sets if one add fails
-        trips.remove(trip);
-        trip.removeUser(this);
-        return false;
+        trips.add(trip);
+        return true;
     }
 
     public boolean removeTrip(Trip trip){
