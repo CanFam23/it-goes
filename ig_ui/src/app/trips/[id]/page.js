@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CalendarDays, MapPin } from "lucide-react";
 import Map from "@/components/Map";
 import ErrorMessage from "@/components/ErrorMessage";
 import { getTrip, tripRouteCollection } from "@/lib/getTrip.mjs";
@@ -22,16 +23,43 @@ export default async function TripDetail({ params }) {
   const tripDate = new Date(`${trip.dateOfTrip}T00:00:00`).toLocaleDateString("en-US", {
     month: "long", day: "numeric", year: "numeric",
   });
+  const companions = trip.companionNames ?? [];
 
   return (
     <article className="w-full max-w-5xl mx-auto bg-background p-5 md:p-10 shadow-lg">
-      <Link href="/trips" className="hover:underline">← All trips</Link>
-      <h1 className="font-black text-3xl md:text-5xl mt-5">{trip.title}</h1>
-      <p className="mt-3 text-lg">{trip.locationName}, {trip.stateCountry} · {tripDate}</p>
-      <p className="mt-2">By {trip.authorUsername}</p>
-      {trip.peopleInvolved?.length > 0 && (
-        <p className="mt-1">With {trip.peopleInvolved.join(", ")}</p>
-      )}
+      <header className="border-b-2 border-black pb-8">
+        <Link href="/trips" className="font-anon text-sm font-bold hover:underline">← All trips</Link>
+        <p className="mt-8 font-anon text-sm font-bold uppercase tracking-widest text-amber-700">Trip report</p>
+        <h1 className="mt-2 font-anon text-4xl sm:text-5xl md:text-6xl font-black leading-tight [overflow-wrap:anywhere]">
+          {trip.title}
+        </h1>
+
+        <div className="mt-6 flex flex-wrap gap-3">
+          <p className="flex items-center gap-2 rounded-full border border-black/30 bg-white px-4 py-2 font-medium">
+            <MapPin size={18} aria-hidden="true" />
+            {trip.locationName}, {trip.stateCountry}
+          </p>
+          <time dateTime={trip.dateOfTrip} className="flex items-center gap-2 rounded-full border border-black/30 bg-white px-4 py-2 font-medium">
+            <CalendarDays size={18} aria-hidden="true" />
+            {tripDate}
+          </time>
+        </div>
+
+        <div className="mt-7 border-l-4 border-amber-500 bg-white p-5">
+          <div className="flex flex-col gap-5 sm:flex-row sm:gap-10">
+            <div>
+              <p className="text-sm text-gray-600">Written by</p>
+              <p className="mt-1 text-lg font-bold">{trip.authorName}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">With</p>
+              <p className="mt-1 text-lg font-bold">
+                {companions.length > 0 ? companions.join(", ") : "Solo trip"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </header>
 
       {trip.imageURL && (
         <Image src={trip.imageURL} alt={`${trip.title} cover image`}
