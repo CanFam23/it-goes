@@ -1,10 +1,12 @@
 "use client";
 
 import {useEffect, useState} from "react";
+import {ChevronDown} from "lucide-react";
 import {requestJson} from "@/lib/requestJson.mjs";
 import {saveSkiDay, deleteSkiDay} from "@/lib/skiDays.mjs";
 
 const emptyForm = {date: "", locationId: "", name: "", state: "", country: ""};
+const selectClass = "w-full appearance-none rounded-lg border-2 border-black bg-white px-3 py-2 pr-10 transition-colors hover:border-border-btn focus:border-border-btn focus:outline-none focus:ring-2 focus:ring-border-btn/30 disabled:opacity-50";
 
 export default function SkiDayForm() {
   const [form, setForm] = useState(emptyForm);
@@ -75,13 +77,16 @@ export default function SkiDayForm() {
       <h2 className="text-2xl font-black">{editingId ? "Edit day" : "Add day"}</h2>
       <form onSubmit={submit} className="mt-5 flex flex-col gap-4">
         <label className="flex flex-col gap-1">Date
-          <input type="date" name="date" value={form.date} onChange={change} max={new Date().toISOString().slice(0, 10)} required className="border-2 border-black bg-white p-2" />
+          <input type="date" name="date" value={form.date} onChange={change} max={new Date().toISOString().slice(0, 10)} required className="rounded-lg border-2 border-black bg-white p-2 focus:border-border-btn focus:outline-none focus:ring-2 focus:ring-border-btn/30" />
         </label>
         <label className="flex flex-col gap-1">Location
-          <select name="locationId" value={form.locationId} onChange={change} required={!newLocation} disabled={newLocation} className="rounded-lg border-2 border-black bg-white p-2 disabled:opacity-50">
-            <option value="">Choose a location</option>
-            {locations.map((location) => <option key={location.id} value={location.id}>{location.name} ({location.state ? `${location.state}, ` : ""}{location.country})</option>)}
-          </select>
+          <span className="relative">
+            <select name="locationId" value={form.locationId} onChange={change} required={!newLocation} disabled={newLocation} className={selectClass}>
+              <option value="">Choose a location</option>
+              {locations.map((location) => <option key={location.id} value={location.id}>{location.name} ({location.state ? `${location.state}, ` : ""}{location.country})</option>)}
+            </select>
+            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-5 -translate-y-1/2" />
+          </span>
         </label>
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={newLocation} onChange={(event) => setNewLocation(event.target.checked)} /> Add a new location
@@ -89,16 +94,22 @@ export default function SkiDayForm() {
         {newLocation && <div className="flex flex-col gap-3 border-l-2 border-black pl-4">
           <label className="flex flex-col">Name<input name="name" value={form.name} onChange={change} required maxLength={255} className="border-2 border-black bg-white p-2" /></label>
           <label className="flex flex-col">Country
-            <select name="country" value={form.country} onChange={change} required className="rounded-lg border-2 border-black bg-white p-2">
-              <option value="">Choose a country</option>
-              {options.countries.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
+            <span className="relative">
+              <select name="country" value={form.country} onChange={change} required className={selectClass}>
+                <option value="">Choose a country</option>
+                {options.countries.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+              <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-5 -translate-y-1/2" />
+            </span>
           </label>
           {form.country === "US" && <label className="flex flex-col">State
-            <select name="state" value={form.state} onChange={change} required className="rounded-lg border-2 border-black bg-white p-2">
-              <option value="">Choose a state</option>
-              {options.states.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
+            <span className="relative">
+              <select name="state" value={form.state} onChange={change} required className={selectClass}>
+                <option value="">Choose a state</option>
+                {options.states.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+              <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 size-5 -translate-y-1/2" />
+            </span>
           </label>}
         </div>}
         <div className="flex gap-3">
