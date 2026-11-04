@@ -21,12 +21,12 @@ public class WriteOriginFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        String method = request.getMethod();
-        String path = request.getRequestURI().substring(request.getContextPath().length());
-        boolean newWrite = (path.equals("/me/ski-days") || path.startsWith("/me/ski-days/") || path.equals("/locations"))
+        final String method = request.getMethod();
+        final String path = request.getRequestURI().substring(request.getContextPath().length());
+        final boolean newWrite = (path.equals("/me/ski-days") || path.startsWith("/me/ski-days/") || path.equals("/locations"))
                 && !method.equals("GET") && !method.equals("OPTIONS");
-        String origin = request.getHeader("Origin");
-        if (newWrite && origin != null && !allowedOrigins.contains(origin)) {
+        final String origin = request.getHeader("Origin");
+        if (newWrite && (origin == null || !allowedOrigins.contains(origin))) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setContentType("application/json");
             response.getWriter().write("{\"message\":\"Request origin is not allowed.\"}");

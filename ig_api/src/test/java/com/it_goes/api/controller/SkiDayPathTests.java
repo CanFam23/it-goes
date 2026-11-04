@@ -58,6 +58,9 @@ class SkiDayPathTests {
         mvc.perform(post("/me/ski-days").header("Origin", "https://other.example")
                 .contentType("application/json").content("{\"date\":\"2025-01-10\",\"locationId\":2}"))
                 .andExpect(status().isForbidden());
+        mvc.perform(post("/me/ski-days")
+                .contentType("application/json").content("{\"date\":\"2025-01-10\",\"locationId\":2}"))
+                .andExpect(status().isForbidden());
         verifyNoMoreInteractions(service);
     }
 
@@ -89,6 +92,10 @@ class SkiDayPathTests {
                 .contentType("application/json")
                 .content("{\"name\":\"Mystery\"}"))
                 .andExpect(status().isBadRequest());
+        mvc.perform(post("/locations")
+                .contentType("application/json")
+                .content("{\"name\":\"No origin\",\"country\":\"FR\"}"))
+                .andExpect(status().isForbidden());
     }
 
     @Test

@@ -2,7 +2,7 @@
 
 Signed-in users open `/post/day` to log a required calendar date at an existing location or add a location with a required name and country. State is required for US locations and omitted for other countries. Supported countries are the US, Canada, Japan, France, Italy, Switzerland, and Norway. Coordinates are optional and are not collected here. The Post menu's Trip choice is reserved for `/post/trip` in roadmap item 4.
 
-The API paths below are under `/api`. Writes use the existing JWT cookie, JSON requests, and the configured allowed browser origin. Personal entries are private; location choices and aggregate statistics are public.
+The API paths below are under `/api`. Writes use the existing JWT cookie and JSON requests. Authenticated ski-day and location writes require an `Origin` header matching `CORS_ALLOWED_ORIGINS` (default `http://localhost:3000`); a missing or different Origin returns `403`. Personal entries are private; location choices and aggregate statistics are public.
 
 | Request | Example response |
 | --- | --- |

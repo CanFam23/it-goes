@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -75,8 +76,8 @@ public class SecurityConfig {
 
         http.authenticationProvider(authenticationProvider());
 
-        http.addFilterBefore(new WriteOriginFilter(System.getenv().getOrDefault("CORS_ALLOWED_ORIGINS", "http://localhost:3000")),
-                UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(new WriteOriginFilter(System.getenv().getOrDefault("CORS_ALLOWED_ORIGINS", "http://localhost:3000")),
+                AuthorizationFilter.class);
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
