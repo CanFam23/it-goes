@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+button, input, select {
+  cursor: pointer;
+}
+
+button:disabled, input:disabled, select:disabled {
+  cursor: not-allowed;
+}
+
 :root {
   --background: #FBF8E6;
   --text-main: #000000;

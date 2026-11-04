@@ -1,12 +1,14 @@
 "use client";
-import Link from "next/Link";
+import Link from "next/link";
 
 import {Menu, LogIn, X} from "lucide-react";
-import {useState} from "react";
+import {useEffect, useRef, useState} from "react";
 
 // Navbar component
 export default function Navbar(props) {
-  const linksContent = Object.entries(props.links).map(([key, link]) => (
+  const linksContent = Object.entries(props.links).map(([key, link]) => key === "Post" ? (
+    <PostMenu key={key} />
+  ) : (
     <Link
       href={link}
       key={key}
@@ -54,7 +56,9 @@ function Hamburger(props) {
   }
 
   // Make HTML with links
-  const linksContent = Object.entries(props.links).map(([key, link]) => (
+  const linksContent = Object.entries(props.links).map(([key, link]) => key === "Post" ? (
+    <PostMenu key={key} mobile onNavigate={() => props.setDisplay(false)} />
+  ) : (
     <Link
       href={link}
       key={key}
@@ -81,5 +85,34 @@ function Hamburger(props) {
         {linksContent}
       </nav>
     </>
+  );
+}
+
+function PostMenu({mobile = false, onNavigate}) {
+  const detailsRef = useRef(null);
+
+  useEffect(() => {
+    function closeOnOutsideClick(event) {
+      if (detailsRef.current && !detailsRef.current.contains(event.target)) {
+        detailsRef.current.open = false;
+      }
+    }
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    return () => document.removeEventListener("pointerdown", closeOnOutsideClick);
+  }, []);
+
+  return (
+    <details ref={detailsRef} className={`relative font-anon font-bold ${mobile ? "text-2xl py-2" : "text-2xl lg:text-3xl mt-auto mb-2"}`}>
+      <summary className="cursor-pointer list-none hover:underline [&::-webkit-details-marker]:hidden">
+        Post
+      </summary>
+      <div className={`${mobile ? "" : "absolute top-full left-0 z-20 min-w-40 shadow-lg"} flex flex-col border-2 border-t-0 border-black bg-background p-2 text-xl`}>
+        <Link href="/post/day" className="hover:underline" onClick={() => {
+          detailsRef.current.open = false;
+          onNavigate?.();
+        }}>Day</Link>
+        <span aria-disabled="true" className="text-gray-500">Trip (coming later)</span>
+      </div>
+    </details>
   );
 }

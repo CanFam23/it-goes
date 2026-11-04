@@ -4,7 +4,7 @@ export function middleware(request) {
   const token = request.cookies.get('token')?.value;
 
   // Define protected routes
-  const protectedPaths = ['/dashboard', '/profile', '/settings'];
+  const protectedPaths = ['/dashboard', '/profile', '/settings', '/post/day'];
   const isProtectedPath = protectedPaths.some(path => 
     request.nextUrl.pathname.startsWith(path)
   );
@@ -17,5 +17,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/profile/:path*', '/settings/:path*'],
+  matcher: ['/dashboard/:path*', '/profile/:path*', '/settings/:path*', '/post/day/:path*'],
 };

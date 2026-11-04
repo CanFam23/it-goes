@@ -41,7 +41,7 @@ const loggedInLinks = {
   Trips: "/trips",
   Map: "/map",
   Gallery: "/gallery",
-  "Post Trip": "/post",
+  Post: "/post/day",
   Profile: "/profile",
   "Log out": "/logout",
 };

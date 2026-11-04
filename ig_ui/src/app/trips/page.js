@@ -42,6 +42,7 @@ export default async function Page({ searchParams }) {
         <hr className="border-t border-black my-4"/>
         <DaysSkiedTotal daysSkiedData={daysSkied} year={year}/>
         <DaysSkiedChart plotData={daysSkiedLocation} year={year}/>
+        <p className="text-center text-sm">A date counts once in the total; skiing two locations that day counts once at each location.</p>
       </div>
 
       <Trips trips={trips}/>
