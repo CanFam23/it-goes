@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface TripRepository extends JpaRepository<Trip, Long> {
+    @Query("select t from Trip t order by t.dateOfTrip desc, t.id desc")
     Page<Trip> findAllByOrderByDateOfTripDesc(Pageable pageable);
 
     /**

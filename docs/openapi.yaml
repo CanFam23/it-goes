@@ -1,0 +1,120 @@
+openapi: 3.0.3
+info:
+  title: It Goes public trip reads
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+paths:
+  /trips:
+    get:
+      summary: List trips, newest first
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 5, default: 5 }
+      responses:
+        '200':
+          description: Trip summaries and total page count
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [trips, numPages]
+                properties:
+                  trips:
+                    type: array
+                    items: { $ref: '#/components/schemas/TripSummary' }
+                  numPages: { type: integer, example: 1 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /trips/{id}:
+    get:
+      summary: Get one trip
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      responses:
+        '200':
+          description: Trip detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Trip' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /trips/routes:
+    get:
+      summary: Get routes as GeoJSON
+      responses:
+        '200':
+          description: GeoJSON FeatureCollection; trips without routes are omitted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [type, features]
+                properties:
+                  type: { type: string, enum: [FeatureCollection] }
+                  features:
+                    type: array
+                    items:
+                      type: object
+                      description: GeoJSON Feature with trip properties and LineString geometry
+components:
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Trip not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, example: Trip with ID '#999' not found }
+    TripSummary:
+      type: object
+      required: [id, title, desc, locationName, stateCountry, dateOfTrip, imageURL]
+      properties:
+        id: { type: integer, format: int64, example: 1 }
+        title: { type: string, example: A day at Beehive Basin }
+        desc: { type: string, example: Good snow and clear skies. }
+        locationName: { type: string, example: Beehive Basin }
+        stateCountry: { type: string, example: Montana }
+        dateOfTrip: { type: string, format: date, example: '2025-06-01' }
+        imageURL: { type: string, format: uri, example: 'https://example.com/cover.jpg' }
+    Trip:
+      allOf:
+        - $ref: '#/components/schemas/TripSummary'
+        - type: object
+          required: [authorUsername, authorName, peopleInvolved, companionNames, location]
+          properties:
+            datePosted: { type: string, format: date, nullable: true }
+            dateUpdated: { type: string, format: date, nullable: true }
+            authorUsername: { type: string, example: nick }
+            authorName: { type: string, example: Nick Clouse }
+            peopleInvolved:
+              type: array
+              items: { type: string }
+            companionNames:
+              type: array
+              items: { type: string }
+            location:
+              type: array
+              description: Longitude and latitude
+              minItems: 2
+              maxItems: 2
+              items: { type: number, format: double }
+            route:
+              type: object
+              nullable: true
+              description: GeoJSON LineString, or null when the trip has no route

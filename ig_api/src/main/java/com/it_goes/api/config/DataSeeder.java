@@ -10,9 +10,10 @@ import org.locationtech.jts.geom.LineString;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -20,15 +21,21 @@ import java.time.LocalDate;
 import java.util.Date;
 
 @Configuration
+@Profile("dev")
 public class DataSeeder {
 
     @Bean
     CommandLineRunner seed(TripRepository tr, LocationRepository lr, UserRepository ur, SeasonRepository sr,
-                               SocialLinkRepository slr, ImageRepository ir, PasswordEncoder pe) {
-        return args -> seedData(tr, lr, ur, sr, slr, ir, pe);
+                               SocialLinkRepository slr, ImageRepository ir, PasswordEncoder pe,
+                               TransactionTemplate transactions) {
+        return args -> transactions.executeWithoutResult(status -> {
+            if (tr.count() == 0 && lr.count() == 0 && ur.count() == 0 && sr.count() == 0
+                    && slr.count() == 0 && ir.count() == 0) {
+                seedData(tr, lr, ur, sr, slr, ir, pe);
+            }
+        });
     }
 
-    @Transactional
     void seedData(TripRepository tr, LocationRepository lr, UserRepository ur, SeasonRepository sr,
                   SocialLinkRepository slr, ImageRepository ir, PasswordEncoder pe){
         final Image profileImg = new Image("images/DSC02232.JPG","nclouse-pi") ;

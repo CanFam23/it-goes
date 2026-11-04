@@ -68,7 +68,8 @@ public class SecurityConfig {
                         auth.requestMatchers("/auth/**", "/health").permitAll()
                                 .requestMatchers("/test/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/getTrips", "/getTrip", "/getAllTripFeatureRoutes",
-                                        "/getDaysSkied", "/getDaysSkiedLocation").permitAll()
+                                        "/getDaysSkied", "/getDaysSkiedLocation",
+                                        "/trips", "/trips/*").permitAll()
                                 .anyRequest().authenticated()
                 );
 

@@ -90,4 +90,49 @@ class PublicReadPathTests {
         mvc.perform(get("/getTrip?id=invalid"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void canonicalTripReadsMatchLegacyRoutes() throws Exception {
+        when(tripService.getTripSummaries(5, 0)).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 5), 0));
+        when(tripService.getTrip(7L)).thenReturn(new TripDto(
+                7L, "A trip", "A good day", "Big Sky", "Montana",
+                LocalDate.of(2025, 1, 1), null, null, "author",
+                new String[]{"friend"}, null, new double[]{-111.4, 45.3},
+                "https://example.com/cover.jpg", "Author Name", new String[]{"Friend Name"}));
+        when(tripService.getAllTripFeatureRoutes()).thenReturn(
+                new ObjectMapper().readTree("{\"type\":\"FeatureCollection\",\"features\":[]}"));
+
+        mvc.perform(get("/trips?page=0&size=5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.trips").isEmpty())
+                .andExpect(jsonPath("$.numPages").value(0));
+        mvc.perform(get("/trips/7"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(7));
+        mvc.perform(get("/trips/routes"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.type").value("FeatureCollection"));
+        mvc.perform(get("/getTrips?pageNum=0&pageSize=5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.numPages").value(0));
+        mvc.perform(get("/getTrip?id=7"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(7));
+    }
+
+    @Test
+    void canonicalTripReadsKeepJsonErrorsAndWritesProtected() throws Exception {
+        when(tripService.getTrip(999L)).thenThrow(new NotFoundException("Trip with ID #999 not found"));
+        mvc.perform(get("/trips?page=-1&size=5"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").exists());
+        mvc.perform(get("/trips?page=0&size=6"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").exists());
+        mvc.perform(get("/trips/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").exists());
+        mvc.perform(post("/trips"))
+                .andExpect(status().isUnauthorized());
+    }
 }

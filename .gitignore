@@ -40,7 +40,7 @@ out/
 # macOS Finder metadata
 .DS_Store
 
-application.properties
+application*
 
 AGENTS.md
 
