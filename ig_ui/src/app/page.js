@@ -1,0 +1,63 @@
+import Image from "next/image";
+import Trips from "@/components/Trips";
+import { getTrips } from "@/lib/getTrips";
+import Link from "next/link";
+import Title from "@/components/Title";
+import ErrorMessage from "@/components/ErrorMessage";
+
+export default async function Home() {
+
+  let trips;
+  try {
+    ({trips} = await getTrips({pageSize: 3, pageNum: 0}));
+  } catch {
+    return <ErrorMessage message="Unable to load recent trips. Please try again shortly." />;
+  }
+
+  return (
+    <section className="w-full">
+      <Image src={"/images/group_pic.jpg"}
+             alt={"Group picture of it goes group"}
+             width={1200}
+             height={600}
+             className="w-full md:max-w-2/3 place-self-center shadow-md"
+      />
+      <Title title="About Us"/>
+      <div className="bg-background w-full p-5 flex flex-col text-center rounded-m shadow-lg">
+        <article>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+          incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+          dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </article>
+        <Link
+          href=""
+          className="text-text-btn bg-bg-btn font-bold border-border-btn
+          border-2 rounded-lg p-1 self-center my-5
+          transform transition-transform duration-200
+          hover:scale-105 hover:bg-gray-100"
+        >
+          Learn More
+        </Link>
+      </div>
+      <Title title="Recent Trips"/>
+      <Trips
+       trips={trips}
+      />
+      <div className="flex w-full items-center justify-center">
+        <Link
+          href="/trips"
+          className="text-text-btn text-2xl
+          bg-bg-btn font-bold border-border-btn
+          border-2 rounded-lg p-1 my-5
+          transform transition-transform duration-200
+          hover:scale-105 hover:bg-gray-100"
+        >
+          View All Trips
+        </Link>
+      </div>
+    </section>
+  );
+}
+
