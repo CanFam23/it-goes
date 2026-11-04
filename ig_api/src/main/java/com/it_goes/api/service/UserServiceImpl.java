@@ -108,12 +108,7 @@ public class UserServiceImpl implements UserService{
 
         // Find season with given year as it's start year
         final Optional<Season> seasonFound = seasonRepo.findByStartYear(year);
-        if (seasonFound.isEmpty()) {
-            logger.error("getDaysSkied: No season found for year #{}", year);
-            throw new NotFoundException("No season found for year " + year);
-        }
-
-        final Season season = seasonFound.get();
+        final Season season = seasonFound.orElseGet(() -> new Season(year));
 
         final List<FirstNameDaysYear> daysSkied = userRepo.getDaysSkied(season.getStartDate(), season.getEndDate());
 
@@ -146,12 +141,7 @@ public class UserServiceImpl implements UserService{
 
         // Find season with given year as it's start year
         final Optional<Season> seasonFound = seasonRepo.findByStartYear(year);
-        if (seasonFound.isEmpty()) {
-            logger.error("getDaysSkiedEachLocation: No season found for year #{}", year);
-            throw new NotFoundException("No season found for year " + year);
-        }
-
-        final Season season = seasonFound.get();
+        final Season season = seasonFound.orElseGet(() -> new Season(year));
 
         final List<FirstNameDaysLocationYear> daysSkied = userRepo.getDaysSkiedEachLocation(season.getStartDate(), season.getEndDate());
 

@@ -42,7 +42,7 @@ public class Location {
     private String name;
 
     @Setter
-    @Column(nullable = false)
+    @Column(nullable = true)
     private State state;
 
     @Setter
@@ -119,6 +119,6 @@ public class Location {
     }
 
     public String toString(){
-        return this.name + " " + this.state.toString();
+        return this.name + " " + (this.state == null ? this.country.toString() : this.state.toString());
     }
 }

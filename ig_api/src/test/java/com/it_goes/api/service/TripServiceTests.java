@@ -68,6 +68,15 @@ public class TripServiceTests {
     }
 
     @Test
+    void locationWithoutStateOrCoordinatesStillRendersTrip() {
+        Location frenchLocation = new Location("Chamonix", null, Country.FR);
+        Trip trip = new Trip("French trip", user, frenchLocation, LocalDate.of(2025, 1, 1));
+
+        assertThat(TripService.toTripSummaryDto(trip).stateCountry()).isEqualTo("France");
+        assertThat(TripService.toTripDto(trip, null).location()).isNull();
+    }
+
+    @Test
     void getTrip_tripNotFound_throwsException(){
         when(tripRepo.findById(2L)).thenReturn(Optional.empty());
 

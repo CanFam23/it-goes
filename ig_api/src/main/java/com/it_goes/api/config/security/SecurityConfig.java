@@ -69,12 +69,14 @@ public class SecurityConfig {
                                 .requestMatchers("/test/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/getTrips", "/getTrip", "/getAllTripFeatureRoutes",
                                         "/getDaysSkied", "/getDaysSkiedLocation",
-                                        "/trips", "/trips/*").permitAll()
+                                        "/trips", "/trips/*", "/locations", "/locations/options").permitAll()
                                 .anyRequest().authenticated()
                 );
 
         http.authenticationProvider(authenticationProvider());
 
+        http.addFilterBefore(new WriteOriginFilter(System.getenv().getOrDefault("CORS_ALLOWED_ORIGINS", "http://localhost:3000")),
+                UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -33,7 +33,8 @@ public interface TripService {
     static TripSummaryDto toTripSummaryDto(Trip trip) {
         return new TripSummaryDto(trip.getId(), trip.getTitle(),
                 trip.getDescription(), trip.getLocation().getName(),
-                trip.getLocation().getState().getName(), trip.getDateOfTrip(), ImageService.buildImageUrl(trip.getCoverImageKey()));
+                trip.getLocation().getState() == null ? trip.getLocation().getCountry().getName()
+                        : trip.getLocation().getState().getName(), trip.getDateOfTrip(), ImageService.buildImageUrl(trip.getCoverImageKey()));
     }
 
     /**
@@ -45,11 +46,13 @@ public interface TripService {
     static TripDto toTripDto(Trip trip, JsonNode route) {
         return new TripDto(trip.getId(), trip.getTitle(),
                 trip.getDescription(), trip.getLocation().getName(),
-                trip.getLocation().getState().getName(), trip.getDateOfTrip(),
+                trip.getLocation().getState() == null ? trip.getLocation().getCountry().getName()
+                        : trip.getLocation().getState().getName(), trip.getDateOfTrip(),
                 trip.getDatePosted(), trip.getDateUpdated(),
                 trip.getAuthor().getUsername(),
                 trip.getUsers().stream().map(User::getUsername).toArray(String[]::new), route,
-                new double[]{trip.getLocation().getLocation().getX(), trip.getLocation().getLocation().getY()},
+                trip.getLocation().getLocation() == null ? null
+                        : new double[]{trip.getLocation().getLocation().getX(), trip.getLocation().getLocation().getY()},
                 ImageService.buildImageUrl(trip.getCoverImageKey()),
                 trip.getAuthor().getFirstName() + " " + trip.getAuthor().getLastName(),
                 trip.getUsers().stream()

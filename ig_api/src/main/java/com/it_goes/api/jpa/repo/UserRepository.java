@@ -35,13 +35,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
        UNION
        SELECT id AS trip_id, author_id AS user_id FROM trip WHERE author_id IS NOT NULL
      )
+     , ski_days AS (
+       SELECT tp.user_id, t.date_of_trip AS ski_date FROM trip_people tp JOIN trip t ON t.id = tp.trip_id
+       UNION
+       SELECT user_id, ski_date FROM ski_day_log
+     )
      SELECT u.first_name, COUNT(*) AS days_skied,
      :start AS startDate,
      EXTRACT(YEAR FROM CAST(:start AS DATE)) AS year
-     FROM trip_people AS tp
-     JOIN trip AS t ON tp.trip_id = t.id
-     JOIN it_goes_user AS u ON tp.user_id = u.id
-     WHERE t.date_of_trip >= :start and t.date_of_trip <= :end
+     FROM ski_days AS d
+     JOIN it_goes_user AS u ON d.user_id = u.id
+     WHERE d.ski_date >= :start and d.ski_date <= :end
      GROUP BY u.id,u.first_name;
     """, nativeQuery = true)
     List<FirstNameDaysYear> getDaysSkied(@Param("start") LocalDate start, @Param("end") LocalDate end);
@@ -56,12 +60,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
        UNION
        SELECT id AS trip_id, author_id AS user_id FROM trip WHERE author_id IS NOT NULL
      )
-     SELECT u.first_name, COUNT(*) AS days_skied, EXTRACT(year FROM s.start_date) as year
-     FROM trip_people AS tp
-     JOIN trip AS t ON tp.trip_id = t.id
-     JOIN it_goes_user AS u ON tp.user_id = u.id
-     JOIN season AS s ON t.season_id = s.id
-     GROUP BY u.id,u.first_name, s.start_date;
+     , ski_days AS (
+       SELECT tp.user_id, t.date_of_trip AS ski_date FROM trip_people tp JOIN trip t ON t.id = tp.trip_id
+       UNION
+       SELECT user_id, ski_date FROM ski_day_log
+     )
+     SELECT u.first_name, COUNT(*) AS days_skied,
+            EXTRACT(YEAR FROM d.ski_date - INTERVAL '9 months') AS year
+     FROM ski_days d JOIN it_goes_user u ON d.user_id = u.id
+     GROUP BY u.id, u.first_name, EXTRACT(YEAR FROM d.ski_date - INTERVAL '9 months');
     """, nativeQuery = true)
     List<FirstNameDaysYear> getDaysSkied();
 
@@ -78,16 +85,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
         UNION
         SELECT id AS trip_id, author_id AS user_id FROM trip WHERE author_id IS NOT NULL
       )
+      , ski_places AS (
+        SELECT tp.user_id, t.date_of_trip AS ski_date, t.location_id FROM trip_people tp JOIN trip t ON t.id = tp.trip_id
+        WHERE t.location_id IS NOT NULL
+        UNION
+        SELECT user_id, ski_date, location_id FROM ski_day_log
+      )
       SELECT u.first_name, l.name AS location, COUNT(*) AS days_skied,
       :start AS startDate,
       EXTRACT(YEAR FROM CAST(:start AS DATE)) AS year
-      FROM trip_people AS tp
-      JOIN trip AS t ON tp.trip_id = t.id
-      JOIN it_goes_user AS u ON tp.user_id = u.id
-      JOIN location AS l on t.location_id = l.id
-      JOIN season as s ON t.season_id = s.id
-      WHERE t.date_of_trip >= :start and t.date_of_trip <= :end
-      GROUP BY u.id,u.first_name,l.name, s.start_date;
+      FROM ski_places AS p
+      JOIN it_goes_user AS u ON p.user_id = u.id
+      JOIN location AS l on p.location_id = l.id
+      WHERE p.ski_date >= :start and p.ski_date <= :end
+      GROUP BY u.id,u.first_name,l.id,l.name;
     """, nativeQuery = true)
     List<FirstNameDaysLocationYear> getDaysSkiedEachLocation(@Param("start") LocalDate start, @Param("end") LocalDate end);
 
@@ -102,14 +113,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
         UNION
         SELECT id AS trip_id, author_id AS user_id FROM trip WHERE author_id IS NOT NULL
       )
+      , ski_places AS (
+        SELECT tp.user_id, t.date_of_trip AS ski_date, t.location_id FROM trip_people tp JOIN trip t ON t.id = tp.trip_id
+        WHERE t.location_id IS NOT NULL
+        UNION
+        SELECT user_id, ski_date, location_id FROM ski_day_log
+      )
       SELECT u.first_name, l.name AS location, COUNT(*) AS days_skied,
-             EXTRACT(YEAR FROM s.start_date) AS year
-      FROM trip_people AS tp
-      JOIN trip AS t ON tp.trip_id = t.id
-      JOIN it_goes_user AS u ON tp.user_id = u.id
-      JOIN location AS l on t.location_id = l.id
-      JOIN season as s ON t.season_id = s.id
-      GROUP BY u.id,u.first_name,l.name, s.start_date;
+             EXTRACT(YEAR FROM p.ski_date - INTERVAL '9 months') AS year
+      FROM ski_places AS p
+      JOIN it_goes_user AS u ON p.user_id = u.id
+      JOIN location AS l on p.location_id = l.id
+      GROUP BY u.id,u.first_name,l.id,l.name, EXTRACT(YEAR FROM p.ski_date - INTERVAL '9 months');
     """, nativeQuery = true)
     List<FirstNameDaysLocationYear> getDaysSkiedEachLocation();
 

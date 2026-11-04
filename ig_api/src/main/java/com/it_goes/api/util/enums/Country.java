@@ -6,7 +6,11 @@ import lombok.Getter;
 public enum Country {
     US("United States"),
     CA("Canada"),
-    JPN("Japan");
+    JPN("Japan"),
+    FR("France"),
+    IT("Italy"),
+    CH("Switzerland"),
+    NO("Norway");
 
     private final String name;
 
