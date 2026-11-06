@@ -34,6 +34,12 @@ public class GlobalExceptionHandler {
             case "password" -> "Enter a password.";
             case "confirmPassword" -> "Confirm your password.";
             case "firstName", "lastName" -> "Enter your first and last name.";
+            case "title" -> "Enter a trip title.";
+            case "dateOfTrip" -> "Enter a trip date.";
+            case "locationId" -> "Choose a location.";
+            case "newLocation.name" -> "Enter a location name.";
+            case "newLocation.country" -> "Choose a country.";
+            case "body" -> "Write a trip story.";
             default -> "Please check the form fields and try again.";
         };
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse(message));

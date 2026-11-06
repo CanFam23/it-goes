@@ -2,6 +2,7 @@ package com.it_goes.api.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.it_goes.api.dto.TripDto;
+import com.it_goes.api.dto.CreateTripRequest;
 import com.it_goes.api.dto.TripSummaryDto;
 import com.it_goes.api.jpa.model.Trip;
 import com.it_goes.api.jpa.model.User;
@@ -59,7 +60,7 @@ public interface TripService {
                         .filter(user -> !user.getUsername().equals(trip.getAuthor().getUsername()))
                         .map(user -> user.getFirstName() + " " + user.getLastName())
                         .sorted()
-                        .toArray(String[]::new));
+                        .toArray(String[]::new), trip.getBodyJson());
     }
 
     /**
@@ -107,6 +108,8 @@ public interface TripService {
      * @throws NotFoundException If a trip with the given ID isn't found
      */
     TripDto getTrip(Long tripId);
+
+    TripDto createTrip(String username, CreateTripRequest request);
 
     /**
      * Gets summaries of recent trips, should be able to query between {@link #MIN_NUM_TRIPS} and {@link #MIN_NUM_TRIPS} of trips.

@@ -23,7 +23,7 @@ public class WriteOriginFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         final String method = request.getMethod();
         final String path = request.getRequestURI().substring(request.getContextPath().length());
-        final boolean newWrite = (path.equals("/me/ski-days") || path.startsWith("/me/ski-days/") || path.equals("/locations"))
+        final boolean newWrite = (path.equals("/me/ski-days") || path.startsWith("/me/ski-days/") || path.equals("/locations") || path.equals("/trips"))
                 && !method.equals("GET") && !method.equals("OPTIONS");
         final String origin = request.getHeader("Origin");
         if (newWrite && (origin == null || !allowedOrigins.contains(origin))) {

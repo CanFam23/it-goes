@@ -9,5 +9,12 @@ public record TripDto(Long id, String title, String desc,
                       String locationName, String stateCountry, 
                       LocalDate dateOfTrip, LocalDate datePosted, LocalDate dateUpdated,
                       String authorUsername, String[] peopleInvolved, JsonNode route, double[] location,
-                      String imageURL, String authorName, String[] companionNames) {
+                      String imageURL, String authorName, String[] companionNames, JsonNode body) {
+    public TripDto(Long id, String title, String desc, String locationName, String stateCountry,
+                   LocalDate dateOfTrip, LocalDate datePosted, LocalDate dateUpdated,
+                   String authorUsername, String[] peopleInvolved, JsonNode route, double[] location,
+                   String imageURL, String authorName, String[] companionNames) {
+        this(id, title, desc, locationName, stateCountry, dateOfTrip, datePosted, dateUpdated,
+                authorUsername, peopleInvolved, route, location, imageURL, authorName, companionNames, null);
+    }
 }

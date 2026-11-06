@@ -8,11 +8,22 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.it_goes.api.dto.TripDto;
+import com.it_goes.api.dto.CreateTripRequest;
 import com.it_goes.api.dto.TripSummaryDto;
 import com.it_goes.api.jpa.model.Trip;
+import com.it_goes.api.jpa.model.User;
+import com.it_goes.api.jpa.model.Location;
+import com.it_goes.api.jpa.model.Season;
 import com.it_goes.api.jpa.projection.GeoJsonDistanceElevation;
 import com.it_goes.api.jpa.repo.TripRepository;
+import com.it_goes.api.jpa.repo.UserRepository;
+import com.it_goes.api.jpa.repo.LocationRepository;
+import com.it_goes.api.jpa.repo.SeasonRepository;
+import com.it_goes.api.util.exception.AccountRequestException;
 import com.it_goes.api.util.exception.NotFoundException;
+import org.springframework.http.HttpStatus;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,13 +44,85 @@ public class TripServiceImpl implements TripService{
     private final Logger logger = LoggerFactory.getLogger(TripServiceImpl.class);
 
     private final TripRepository tripRepo;
+    private final UserRepository userRepo;
+    private final LocationRepository locationRepo;
+    private final LocationService locationService;
+    private final SeasonRepository seasonRepo;
 
-    public TripServiceImpl(TripRepository tripRepo) {
+    public TripServiceImpl(TripRepository tripRepo, UserRepository userRepo,
+                           LocationRepository locationRepo, SeasonRepository seasonRepo,
+                           LocationService locationService) {
         this.tripRepo = tripRepo;
+        this.userRepo = userRepo;
+        this.locationRepo = locationRepo;
+        this.locationService = locationService;
+        this.seasonRepo = seasonRepo;
+    }
+
+    @Override
+    @Transactional
+    public TripDto createTrip(String username, CreateTripRequest request) {
+        String title = request.title().strip();
+        if (title.isEmpty() || title.length() > 255 || request.dateOfTrip().isAfter(LocalDate.now())) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Enter a title and past or current date.");
+        }
+        if ((request.locationId() == null) == (request.newLocation() == null)
+                || request.locationId() != null && request.locationId() < 1) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Choose an existing location or add a new one.");
+        }
+        String description = TripBody.validateAndSummarize(request.body());
+        User author = userRepo.findByUsername(username).orElseThrow(() -> new NotFoundException("User not found."));
+        Location location = request.newLocation() == null
+                ? locationRepo.findById(request.locationId())
+                    .orElseThrow(() -> new AccountRequestException(HttpStatus.BAD_REQUEST, "Choose an existing location."))
+                : locationService.create(request.newLocation().name(), request.newLocation().country(),
+                    request.newLocation().state());
+        List<Long> participantIds = request.participantIds() == null ? List.of() : request.participantIds();
+        if (participantIds.size() > 100 || participantIds.stream().anyMatch(id -> id == null || id < 1)
+                || new HashSet<>(participantIds).size() != participantIds.size()
+                || participantIds.contains(author.getId())) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Choose valid participants other than yourself.");
+        }
+        List<User> participants = userRepo.findAllById(participantIds);
+        if (participants.size() != participantIds.size()) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "One or more participants were not found.");
+        }
+        int seasonYear = request.dateOfTrip().getMonthValue() >= 10
+                ? request.dateOfTrip().getYear() : request.dateOfTrip().getYear() - 1;
+        Season season = seasonRepo.findByStartYear(seasonYear).orElseGet(() -> seasonRepo.save(new Season(seasonYear)));
+        Trip trip = new Trip(title, author, location, request.dateOfTrip());
+        trip.setDescription(description);
+        trip.setBodyJson(request.body());
+        trip.setSeason(season);
+        participants.forEach(trip::addUser);
+        LineString route = parseRoute(request.route());
+        if (route != null) trip.setRoute(route);
+        Trip saved = tripRepo.saveAndFlush(trip);
+        return TripService.toTripDto(saved, request.route());
+    }
+
+    private LineString parseRoute(JsonNode route) {
+        if (route == null || route.isNull()) return null;
+        if (!"LineString".equals(route.path("type").asText()) || !route.path("coordinates").isArray()
+                || route.path("coordinates").size() < 2 || route.path("coordinates").size() > 5000) {
+            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Choose a valid GPX route.");
+        }
+        List<Coordinate> points = new ArrayList<>();
+        for (JsonNode point : route.path("coordinates")) {
+            if (!point.isArray() || point.size() != 2 || !point.get(0).isNumber() || !point.get(1).isNumber()
+                    || Math.abs(point.get(0).asDouble()) > 180 || Math.abs(point.get(1).asDouble()) > 90) {
+                throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Choose a valid GPX route.");
+            }
+            points.add(new Coordinate(point.get(0).asDouble(), point.get(1).asDouble()));
+        }
+        LineString line = TripService.gf.createLineString(points.toArray(Coordinate[]::new));
+        line.setSRID(4326);
+        return line;
     }
 
     /**{@inheritDoc}*/
     @Override
+    @Transactional(readOnly = true)
     public TripDto getTrip(Long tripId) {
         if (tripId == null) {
             logger.warn("getTrip: tripId is null");

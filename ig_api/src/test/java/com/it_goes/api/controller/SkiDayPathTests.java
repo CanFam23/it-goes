@@ -7,6 +7,7 @@ import com.it_goes.api.config.security.user.UserDetailsServiceImpl;
 import com.it_goes.api.jpa.repo.LocationRepository;
 import com.it_goes.api.jpa.model.Location;
 import com.it_goes.api.service.SkiDayService;
+import com.it_goes.api.service.LocationService;
 import com.it_goes.api.util.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest({SkiDayController.class, LocationController.class})
-@Import({SecurityConfig.class, GlobalExceptionHandler.class, AuthEntryPointJwt.class})
+@Import({SecurityConfig.class, GlobalExceptionHandler.class, AuthEntryPointJwt.class, LocationService.class})
 class SkiDayPathTests {
     @Autowired MockMvc mvc;
     @MockitoBean SkiDayService service;

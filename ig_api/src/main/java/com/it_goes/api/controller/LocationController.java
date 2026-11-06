@@ -2,13 +2,12 @@ package com.it_goes.api.controller;
 
 import com.it_goes.api.jpa.model.Location;
 import com.it_goes.api.jpa.repo.LocationRepository;
+import com.it_goes.api.service.LocationService;
 import com.it_goes.api.util.enums.Country;
 import com.it_goes.api.util.enums.State;
-import com.it_goes.api.util.exception.AccountRequestException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,9 +19,11 @@ import java.util.List;
 @RequestMapping("/locations")
 public class LocationController {
     private final LocationRepository locations;
+    private final LocationService locationService;
 
-    public LocationController(LocationRepository locations) {
+    public LocationController(LocationRepository locations, LocationService locationService) {
         this.locations = locations;
+        this.locationService = locationService;
     }
 
     @GetMapping
@@ -33,17 +34,7 @@ public class LocationController {
 
     @PostMapping
     public ResponseEntity<LocationResponse> create(@Valid @RequestBody LocationRequest request) {
-        String name = request.name().strip();
-        if (name.isEmpty() || name.length() > 255) {
-            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Enter a location name up to 255 characters.");
-        }
-        if (request.country() == Country.US && request.state() == null) {
-            throw new AccountRequestException(HttpStatus.BAD_REQUEST, "Choose a state for a US location.");
-        }
-        if (locations.existsByNameIgnoreCaseAndStateAndCountry(name, request.state(), request.country())) {
-            throw new AccountRequestException(HttpStatus.CONFLICT, "That location already exists.");
-        }
-        Location saved = locations.save(new Location(name, request.state(), request.country()));
+        Location saved = locationService.create(request.name(), request.country(), request.state());
         return ResponseEntity.status(201).body(LocationResponse.of(saved));
     }
 

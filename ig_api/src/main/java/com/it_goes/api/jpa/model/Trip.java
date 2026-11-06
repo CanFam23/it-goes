@@ -1,5 +1,6 @@
 package com.it_goes.api.jpa.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,6 +26,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.LineString;
 
 @Getter
@@ -53,6 +56,11 @@ public class Trip {
     @Lob // Tells JPA to store data in Large Object (LOB), like TEXT
     @Column(nullable = false)
     private String description;
+
+    @Setter
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "body_json", columnDefinition = "jsonb")
+    private JsonNode bodyJson;
 
     @Setter
     @Column(nullable = false)
@@ -91,7 +99,7 @@ public class Trip {
     private Season season;
 
     @Setter
-    @Column(nullable = false)
+    @Column
     private String coverImageKey;
 
     // Unidirectional

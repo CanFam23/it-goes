@@ -2,6 +2,13 @@ package com.it_goes.api.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.it_goes.api.dto.TripDto;
+import com.it_goes.api.dto.CreateTripRequest;
+import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import java.net.URI;
 import com.it_goes.api.dto.TripSummaryDto;
 import com.it_goes.api.dto.TripPageDto;
 import com.it_goes.api.service.TripService;
@@ -25,6 +32,15 @@ public class TripController {
 
     public TripController(TripService tripService) {
         this.tripService = tripService;
+    }
+
+    @PostMapping("trips")
+    public ResponseEntity<TripDto> createTrip(Authentication authentication,
+                                               @Valid @RequestBody CreateTripRequest request) {
+        TripDto trip = tripService.createTrip(authentication.getName(), request);
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/trips/{id}").buildAndExpand(trip.id()).toUri();
+        return ResponseEntity.created(location).body(trip);
     }
 
     @GetMapping("getTrips")
