@@ -14,13 +14,13 @@ export default function TripSummaryCard({trip}) {
   return (
     <article className="bg-background flex flex-row w-full my-5 md:my-15 shadow-lg">
       <div className="w-full m-5 mr-0 min-w-[40vw]">
-        <Image
+        {trip.imageURL ? <Image
           src={trip.imageURL}
           alt={`${trip.title} cover image`}
           width={1200}
           height={600}
           className="w-full h-auto rounded-lg -ml-8"
-        />
+        /> : <div className="flex h-40 items-center justify-center rounded-lg bg-amber-100 p-4 text-center font-bold text-amber-900">Trip photos coming later</div>}
       </div>
       <div className="py-5 -ml-6 flex flex-col items-center">
         <h3

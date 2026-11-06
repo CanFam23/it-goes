@@ -111,7 +111,10 @@ function PostMenu({mobile = false, onNavigate}) {
           detailsRef.current.open = false;
           onNavigate?.();
         }}>Day</Link>
-        <span aria-disabled="true" className="text-gray-500">Trip (coming later)</span>
+        <Link href="/post/trip" className="hover:underline" onClick={() => {
+          detailsRef.current.open = false;
+          onNavigate?.();
+        }}>Trip</Link>
       </div>
     </details>
   );

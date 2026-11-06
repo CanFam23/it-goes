@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: It Goes public trip reads
+  title: It Goes trip API
   version: 1.0.0
 servers:
   - url: http://localhost:8080/api
@@ -29,6 +29,72 @@ paths:
                     items: { $ref: '#/components/schemas/TripSummary' }
                   numPages: { type: integer, example: 1 }
         '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      summary: Create a trip as the signed-in author
+      description: Requires the authentication cookie and an allowed Origin header.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, dateOfTrip, body]
+              properties:
+                title: { type: string, example: A day at Beehive }
+                dateOfTrip: { type: string, format: date, example: '2025-01-10' }
+                locationId:
+                  type: integer
+                  format: int64
+                  nullable: true
+                  description: Use this or newLocation, not both
+                  example: 2
+                newLocation:
+                  type: object
+                  nullable: true
+                  description: Created in the same transaction as the trip
+                  required: [name, country]
+                  properties:
+                    name: { type: string, example: Chamonix }
+                    country: { type: string, example: FR }
+                    state: { type: string, nullable: true, description: Required for US locations }
+                participantIds:
+                  type: array
+                  items: { type: integer, format: int64 }
+                body:
+                  type: object
+                  description: Validated Lexical serialized editor state
+                  example:
+                    root:
+                      type: root
+                      children:
+                        - type: paragraph
+                          children:
+                            - type: text
+                              text: Great snow today.
+                              format: 0
+                route:
+                  type: object
+                  nullable: true
+                  description: Optional GeoJSON LineString with longitude, latitude pairs
+      responses:
+        '201':
+          description: Created trip detail; Location header points to /api/trips/{id}
+          headers:
+            Location:
+              schema: { type: string, format: uri }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Trip' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { description: Authentication required }
+        '403': { description: Request origin is not allowed }
+  /users/options:
+    get:
+      summary: List other users available as trip participants
+      responses:
+        '200':
+          description: IDs and display names, excluding the signed-in user
+        '401': { description: Authentication required }
   /trips/{id}:
     get:
       summary: Get one trip
@@ -83,7 +149,7 @@ components:
         message: { type: string, example: Trip with ID '#999' not found }
     TripSummary:
       type: object
-      required: [id, title, desc, locationName, stateCountry, dateOfTrip, imageURL]
+      required: [id, title, desc, locationName, stateCountry, dateOfTrip]
       properties:
         id: { type: integer, format: int64, example: 1 }
         title: { type: string, example: A day at Beehive Basin }
@@ -91,7 +157,7 @@ components:
         locationName: { type: string, example: Beehive Basin }
         stateCountry: { type: string, example: Montana }
         dateOfTrip: { type: string, format: date, example: '2025-06-01' }
-        imageURL: { type: string, format: uri, example: 'https://example.com/cover.jpg' }
+        imageURL: { type: string, format: uri, nullable: true, example: 'https://example.com/cover.jpg' }
     Trip:
       allOf:
         - $ref: '#/components/schemas/TripSummary'
@@ -118,3 +184,7 @@ components:
               type: object
               nullable: true
               description: GeoJSON LineString, or null when the trip has no route
+            body:
+              type: object
+              nullable: true
+              description: Lexical editor state, or null for older plain-text trips

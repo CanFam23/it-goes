@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CalendarDays, MapPin } from "lucide-react";
 import Map from "@/components/Map";
 import ErrorMessage from "@/components/ErrorMessage";
+import TripBody from "@/components/TripBody";
 import { getTrip, tripRouteCollection } from "@/lib/getTrip.mjs";
 import { PublicNotFoundError } from "@/lib/publicApi.mjs";
 
@@ -65,6 +66,7 @@ export default async function TripDetail({ params }) {
         <Image src={trip.imageURL} alt={`${trip.title} cover image`}
           width={1200} height={600} className="w-full h-auto my-7 rounded-lg" />
       )}
+      {!trip.imageURL && <div className="my-7 flex h-48 items-center justify-center rounded-lg bg-amber-100 text-center font-bold text-amber-900">Trip photos coming later</div>}
 
       {route ? (
         <section aria-label="Trip route" className="my-7">
@@ -75,7 +77,7 @@ export default async function TripDetail({ params }) {
         <p className="my-7">No route available for this trip.</p>
       )}
 
-      <p className="whitespace-pre-wrap text-lg leading-relaxed my-7">{trip.desc}</p>
+      <TripBody body={trip.body} description={trip.desc} />
     </article>
   );
 }
